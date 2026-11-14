@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven build for environments where the Gradle daemon cannot run.
+  The canonical consumer build is build.gradle.kts; both compile the same
+  sources with the same dependency versions.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ai.basedagents</groupId>
+  <artifactId>basedagents-sdk</artifactId>
+  <version>1.0.0</version>
+  <name>BasedAgents SDK (Kotlin)</name>
+  <description>Read-only Kotlin client for the BasedAgents public API.</description>
+  <properties>
+    <kotlin.version>2.0.21</kotlin.version>
+    <serialization.version>1.7.3</serialization.version>
+    <coroutines.version>1.9.0</coroutines.version>
+    <junit.version>5.10.3</junit.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <repositories><repository><id>maven-central</id><url>https://repo.maven.apache.org/maven2</url></repository></repositories>
+  <pluginRepositories><pluginRepository><id>maven-central</id><url>https://repo.maven.apache.org/maven2</url></pluginRepository></pluginRepositories>
+  <dependencies>
+    <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib</artifactId><version>${kotlin.version}</version></dependency>
+    <dependency><groupId>org.jetbrains.kotlinx</groupId><artifactId>kotlinx-serialization-json</artifactId><version>${serialization.version}</version></dependency>
+    <dependency><groupId>org.jetbrains.kotlinx</groupId><artifactId>kotlinx-coroutines-core</artifactId><version>${coroutines.version}</version></dependency>
+    <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-test-junit5</artifactId><version>${kotlin.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
+  </dependencies>
+  <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-maven-plugin</artifactId><version>${kotlin.version}</version>
+        <executions>
+          <execution><id>compile</id><phase>compile</phase><goals><goal>compile</goal></goals></execution>
+          <execution><id>test-compile</id><phase>test-compile</phase><goals><goal>test-compile</goal></goals></execution>
+        </executions>
+        <configuration><compilerPlugins><plugin>kotlinx-serialization</plugin></compilerPlugins></configuration>
+        <dependencies>
+          <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-maven-serialization</artifactId><version>${kotlin.version}</version></dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.2.5</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>

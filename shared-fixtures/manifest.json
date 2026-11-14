@@ -1,0 +1,226 @@
+{
+  "recorded_from": "https://api.basedagents.ai",
+  "note": "Real captured responses from the public read-only API; test suites run offline against these exact bytes.",
+  "fixtures": [
+    {
+      "name": "status",
+      "file": "status.json",
+      "url": "https://api.basedagents.ai/v1/status",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 590,
+      "sha256": "29579809106b46cf616689a696f7b7b820894375ae1812aed5113888112d1bed",
+      "recorded_at": "2026-11-14T14:36:43Z"
+    },
+    {
+      "name": "health",
+      "file": "health.json",
+      "url": "https://api.basedagents.ai/v1/health",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 39,
+      "sha256": "6dccbaf0832d1775f6daf6c9880c1cd89f4c5104b05771738fc13778e5655aba",
+      "recorded_at": "2026-11-14T14:36:44Z"
+    },
+    {
+      "name": "tasks_open",
+      "file": "tasks_open.json",
+      "url": "https://api.basedagents.ai/v1/tasks?status=open&limit=20",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 57025,
+      "sha256": "b2e4d4683302c09330d676490eef5866fd389df81cbe835277d48e9f6ab30699",
+      "recorded_at": "2026-11-14T14:36:46Z"
+    },
+    {
+      "name": "tasks_open_page",
+      "file": "tasks_open_page.json",
+      "url": "https://api.basedagents.ai/v1/tasks?status=open&limit=5&offset=5",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 18029,
+      "sha256": "67dd3566ea5da58978993379f1321ecb535b5535204a0789b1dd7cdd30021ba5",
+      "recorded_at": "2026-11-14T14:36:48Z"
+    },
+    {
+      "name": "tasks_category_code",
+      "file": "tasks_category_code.json",
+      "url": "https://api.basedagents.ai/v1/tasks?category=code&limit=10",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 52435,
+      "sha256": "2b968cd624459640b6f5effea3677b9106bd86bee2c5ee958e0e3092ccdd1b18",
+      "recorded_at": "2026-11-14T14:36:50Z"
+    },
+    {
+      "name": "task_detail_sdk",
+      "file": "task_detail_sdk.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_zFihEF6ij4a3tUP0ENWo1",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 4744,
+      "sha256": "11df4babc3c080b33d89aaa335965da5409b5a9fbfb1d8f26bad05eb44907832",
+      "recorded_at": "2026-11-14T14:36:53Z"
+    },
+    {
+      "name": "task_detail_observatory",
+      "file": "task_detail_observatory.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_LHJPMel3PnqH4aqCwza2c",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 4918,
+      "sha256": "be5bc3e83ef140b825192cfc087d708bb9ace8409244fa8634f733dc9fb4c822",
+      "recorded_at": "2026-11-14T14:36:54Z"
+    },
+    {
+      "name": "task_receipts_sdk",
+      "file": "task_receipts_sdk.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_zFihEF6ij4a3tUP0ENWo1/receipts",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 914,
+      "sha256": "8c951e64a990040f94ebff172ee8276580fc1258d6dc369c7275fd8e3ac53d23",
+      "recorded_at": "2026-11-14T14:36:56Z"
+    },
+    {
+      "name": "task_receipt_sdk",
+      "file": "task_receipt_sdk.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_zFihEF6ij4a3tUP0ENWo1/receipt",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 552,
+      "sha256": "bf0cd763cfc811955e6d525b9ec36877344b0c2f33de05e1e5634e6775043466",
+      "recorded_at": "2026-11-14T14:36:58Z"
+    },
+    {
+      "name": "task_submission_sdk",
+      "file": "task_submission_sdk.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_zFihEF6ij4a3tUP0ENWo1/submission",
+      "status": 401,
+      "content_type": "application/json",
+      "bytes": 74,
+      "sha256": "d016f1c0f9d9c13b28b1f1bb66e78ecfa5c17728a0934d3e9415385cf99e44d1",
+      "recorded_at": "2026-11-14T14:37:00Z"
+    },
+    {
+      "name": "task_payment_sdk",
+      "file": "task_payment_sdk.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_zFihEF6ij4a3tUP0ENWo1/payment",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 523,
+      "sha256": "b8e690477ff70bf21b640f37de6e06426657d99e34c7f5cfeff8a6278d2aba6f",
+      "recorded_at": "2026-11-14T14:37:02Z"
+    },
+    {
+      "name": "tasks_settled",
+      "file": "tasks_settled.json",
+      "url": "https://api.basedagents.ai/v1/tasks/settled?limit=10",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 7433,
+      "sha256": "d903ed52ec1ba504bbc05499fda7d472f88f8d8896301f0697bab80409e0159b",
+      "recorded_at": "2026-11-14T14:37:04Z"
+    },
+    {
+      "name": "agent_jarvis",
+      "file": "agent_jarvis.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_5Mr7gZFJhQRy7nESV86U7zduaoeUh7ss7SLKvH46KUZD",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 916,
+      "sha256": "931814dda5061c9596144aa1291da1e93a2de95abef7ec10fb4b369a8d1fa3de",
+      "recorded_at": "2026-11-14T14:37:06Z"
+    },
+    {
+      "name": "agent_bot",
+      "file": "agent_bot.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_5uX5iK1Df5nbioZmRWAZh7FsUTXrhmc4D3SCoBXh1Syd",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 1030,
+      "sha256": "674c9702e1232605d809659eea560321c3f13d5bdc00d761e40e9772a44d0681",
+      "recorded_at": "2026-11-14T14:37:09Z"
+    },
+    {
+      "name": "agent_reputation_jarvis",
+      "file": "agent_reputation_jarvis.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_5Mr7gZFJhQRy7nESV86U7zduaoeUh7ss7SLKvH46KUZD/reputation",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 489,
+      "sha256": "1c445cb2e9bd49666c06a007ff9189e646c19f955f0e145453b271b804308f02",
+      "recorded_at": "2026-11-14T14:37:11Z"
+    },
+    {
+      "name": "agent_wallet_jarvis",
+      "file": "agent_wallet_jarvis.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_5Mr7gZFJhQRy7nESV86U7zduaoeUh7ss7SLKvH46KUZD/wallet",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 786,
+      "sha256": "907e835093c0de507abeb8eecde6f679ea6d7e97dfca7f1cb8075cf786185d15",
+      "recorded_at": "2026-11-14T14:37:12Z"
+    },
+    {
+      "name": "agents_search_jarvis",
+      "file": "agents_search_jarvis.json",
+      "url": "https://api.basedagents.ai/v1/agents/search?q=Jarvis",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 4034,
+      "sha256": "45cbbbab620d0b65ebc121229acdac4594e663962635d9998c0dd53db8c83b67",
+      "recorded_at": "2026-11-14T14:37:14Z"
+    },
+    {
+      "name": "chain_latest",
+      "file": "chain_latest.json",
+      "url": "https://api.basedagents.ai/v1/chain/latest",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 1446,
+      "sha256": "268ecb5f4a01589450114f941623d8441167c2aaebe4fc8b89cdeb3733d84bb4",
+      "recorded_at": "2026-11-14T14:37:16Z"
+    },
+    {
+      "name": "error_task_not_found",
+      "file": "error_task_not_found.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_0000000000000000000000",
+      "status": 404,
+      "content_type": "application/json",
+      "bytes": 48,
+      "sha256": "ba0679b01e80347b3e0d3e94a05ad9d7064cc4a38bc05c05260196af58a6c5d6",
+      "recorded_at": "2026-11-14T14:37:18Z"
+    },
+    {
+      "name": "service_descriptor",
+      "file": "service_descriptor.json",
+      "url": "https://basedagents.ai/.well-known/basedagents.json",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 5265,
+      "sha256": "d691f0bdfb87d98ec7cf87fc6198908ec2463c60a47427cd4b624145f9b34c66",
+      "recorded_at": "2026-11-14T14:37:20Z"
+    },
+    {
+      "name": "task_detail_settled",
+      "file": "task_detail_settled.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_8zjlRRChZW7kWIb0Oy6Ai",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 11239,
+      "sha256": "ebcf9a2a06e1cccf946720b279cf3ac3b395efe0e0ef304fee48babf9dd1f82f",
+      "recorded_at": "2026-11-14T14:37:22Z"
+    },
+    {
+      "name": "task_payment_settled",
+      "file": "task_payment_settled.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_8zjlRRChZW7kWIb0Oy6Ai/payment",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 2969,
+      "sha256": "f72c778b7a250138c599f377ee927aca9f612c6374cb1fde9b218b84bc401c50",
+      "recorded_at": "2026-11-14T14:37:24Z"
+    }
+  ]
+}
