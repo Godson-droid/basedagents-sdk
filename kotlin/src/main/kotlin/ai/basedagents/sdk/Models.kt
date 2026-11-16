@@ -1,8 +1,17 @@
 package ai.basedagents.sdk
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
  * Typed models for the BasedAgents public read API.
@@ -51,8 +60,10 @@ data class AgentRef(
 @Serializable
 data class CreatorRef(
     val kind: String? = null,
-    val id: String,
+    /** Null for wallet/owner creators, which are identified by [wallet] instead. */
+    val id: String? = null,
     @SerialName("short_id") val shortId: String? = null,
+    val wallet: String? = null,
     val name: String? = null,
     val cert: String? = null,
 )
@@ -282,6 +293,51 @@ data class SettledListEnvelope(
 // Agents
 // ---------------------------------------------------------------------------
 
+/**
+ * One entry of an agent's `skills` list. On the live API these are objects
+ * (`{"name": ..., "registry": ..., "private": ...}`); very old profiles used
+ * bare strings, so the serializer accepts both shapes.
+ */
+@Serializable(with = AgentSkillSerializer::class)
+data class AgentSkill(
+    val name: String,
+    val registry: String? = null,
+    val private: Boolean = false,
+)
+
+@Serializable
+private data class AgentSkillWire(
+    val name: String,
+    val registry: String? = null,
+    val private: Boolean = false,
+)
+
+/** Accepts a skill as either a JSON object or a bare string (legacy profiles). */
+object AgentSkillSerializer : KSerializer<AgentSkill> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ai.basedagents.sdk.AgentSkill", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): AgentSkill {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: return AgentSkill(name = decoder.decodeString())
+        return when (val element = jsonDecoder.decodeJsonElement()) {
+            is JsonPrimitive -> AgentSkill(name = element.content)
+            is JsonObject -> {
+                val wire = jsonDecoder.json.decodeFromJsonElement<AgentSkillWire>(element)
+                AgentSkill(name = wire.name, registry = wire.registry, private = wire.private)
+            }
+            else -> throw IllegalArgumentException("Unexpected skills entry: $element")
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: AgentSkill) {
+        encoder.encodeSerializableValue(
+            AgentSkillWire.serializer(),
+            AgentSkillWire(value.name, value.registry, value.private),
+        )
+    }
+}
+
 /** Aggregate ratings block on an agent profile. */
 @Serializable
 data class Ratings(
@@ -321,7 +377,7 @@ data class Agent(
     val version: String? = null,
     @SerialName("contact_email") val contactEmail: String? = null,
     @SerialName("x_handle") val xHandle: String? = null,
-    val skills: List<String> = emptyList(),
+    val skills: List<AgentSkill> = emptyList(),
     @SerialName("webhook_url") val webhookUrl: String? = null,
     @SerialName("wallet_address") val walletAddress: String? = null,
     @SerialName("wallet_network") val walletNetwork: String? = null,
@@ -390,8 +446,9 @@ data class Reputation(
     val confidence: Double = 0.0,
     @SerialName("verifications_received") val verificationsReceived: Int = 0,
     @SerialName("verifications_given") val verificationsGiven: Int = 0,
-    @SerialName("tasks_accepted") val tasksAccepted: Int = 0,
-    @SerialName("tasks_failed") val tasksFailed: Int = 0,
+    /** The API reports these as fractional scores (e.g. 0.508), not counts. */
+    @SerialName("tasks_accepted") val tasksAccepted: Double = 0.0,
+    @SerialName("tasks_failed") val tasksFailed: Double = 0.0,
 )
 
 /** The EIP-191 proof binding a payout wallet to an agent. */
@@ -443,6 +500,12 @@ data class ChainEntry(
     @SerialName("entry_type") val entryType: String? = null,
     val checkpoints: List<ChainCheckpoint> = emptyList(),
     val verification: String? = null,
+)
+
+/** Envelope for `GET /v1/chain?from=&to=` — a range of registry chain entries. */
+@Serializable
+data class ChainRangeEnvelope(
+    val entries: List<ChainEntry> = emptyList(),
 )
 
 // ---------------------------------------------------------------------------

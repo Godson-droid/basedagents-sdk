@@ -1,12 +1,19 @@
 package ai.basedagents.sdk
 
 import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.ServerSocket
+import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Exercises [BasedAgentsClient] end-to-end (minus the wire) through a fake
@@ -185,6 +192,135 @@ class ClientTest {
             "https://api.example.test/v1/tasks/settled?limit=10&window_days=30",
             transport.requestedUrls.single(),
         )
+    }
+
+    @Test
+    fun `searchAgents sends the page parameter`() = runBlocking {
+        val transport = transportServing("agents_search_jarvis")
+        client(transport).searchAgents(query = "Jarvis", limit = 20, page = 2)
+        assertEquals(
+            "https://api.example.test/v1/agents/search?q=Jarvis&limit=20&page=2",
+            transport.requestedUrls.single(),
+        )
+    }
+
+    @Test
+    fun `agentsFlow aggregates every search page`() = runBlocking {
+        fun pageJson(ids: List<String>, page: Int, totalPages: Int): String {
+            val agents = ids.joinToString(",") { """{"agent_id":"$it","name":"Agent $it"}""" }
+            return """{"agents":[$agents],"pagination":{"page":$page,"limit":2,"total":3,"total_pages":$totalPages}}"""
+        }
+        val transport = FakeTransport { url ->
+            when {
+                url.contains("page=2") -> HttpResponse(200, emptyMap(), pageJson(listOf("ag_3"), 2, 2))
+                else -> HttpResponse(200, emptyMap(), pageJson(listOf("ag_1", "ag_2"), 1, 2))
+            }
+        }
+        val ids = client(transport).agentsFlow(query = "a", pageSize = 2).toList().map { it.id }
+        assertEquals(listOf("ag_1", "ag_2", "ag_3"), ids)
+        assertEquals(2, transport.requestedUrls.size)
+        assertTrue(transport.requestedUrls[0].contains("page=1"))
+        assertTrue(transport.requestedUrls[1].contains("page=2"))
+    }
+
+    @Test
+    fun `tasksFlow clamps an oversized pageSize to the api maximum`() = runBlocking {
+        val transport = FakeTransport {
+            HttpResponse(200, emptyMap(), """{"ok":true,"tasks":[]}""")
+        }
+        val tasks = client(transport).tasksFlow(pageSize = 500).toList()
+        assertEquals(0, tasks.size)
+        assertTrue(
+            transport.requestedUrls.single().contains("limit=100"),
+            "expected limit=100 in ${transport.requestedUrls.single()}",
+        )
+    }
+
+    @Test
+    fun `chain range and entry paths`() = runBlocking {
+        val range = transportServing("chain_range")
+        val entries = client(range).chainEntries(from = 2015, to = 2019)
+        assertEquals(5, entries.entries.size)
+        assertEquals(
+            "https://api.example.test/v1/chain?from=2015&to=2019",
+            range.requestedUrls.single(),
+        )
+
+        val single = transportServing("chain_entry")
+        val entry = client(single).chainEntry(2019)
+        assertEquals(2019L, entry.sequence)
+        assertEquals("https://api.example.test/v1/chain/2019", single.requestedUrls.single())
+    }
+
+    @Test
+    fun `cancelled call against a stalled transport ends promptly with CancellationException`() {
+        runBlocking {
+            val stalled = HttpTransport {
+                delay(Long.MAX_VALUE)
+                HttpResponse(200, emptyMap(), "{}")
+            }
+            val deferred = async { client(stalled).status() }
+            delay(100)
+            val started = System.nanoTime()
+            deferred.cancel()
+            val outcome = withTimeoutOrNull(5_000) {
+                try {
+                    deferred.await()
+                    "completed"
+                } catch (e: CancellationException) {
+                    "cancelled"
+                }
+            }
+            val elapsedMs = (System.nanoTime() - started) / 1_000_000
+            assertEquals("cancelled", outcome)
+            assertTrue(elapsedMs < 1_000, "cancellation took ${elapsedMs}ms, expected under 1000ms")
+        }
+    }
+
+    @Test
+    fun `default transport cancellation abandons a stalled server within a second`() {
+        runBlocking {
+            // A server socket on IPv6 loopback that accepts and never answers.
+            val server = ServerSocket()
+            server.bind(InetSocketAddress("::1", 0))
+            val port = server.localPort
+            val accepter = thread(isDaemon = true) {
+                try {
+                    server.accept().use { socket ->
+                        Thread.sleep(30_000)
+                    }
+                } catch (_: Exception) {
+                    // socket closed at test end
+                }
+            }
+            try {
+                val transport = UrlConnectionTransport()
+                val stalledClient = BasedAgentsClient(
+                    transport = transport,
+                    baseUrl = "http://[::1]:$port/v1",
+                    descriptorUrl = "http://[::1]:$port/descriptor",
+                    minRequestIntervalMillis = 0,
+                )
+                val deferred = async { stalledClient.status() }
+                delay(300)
+                val started = System.nanoTime()
+                deferred.cancel()
+                val outcome = withTimeoutOrNull(5_000) {
+                    try {
+                        deferred.await()
+                        "completed"
+                    } catch (e: CancellationException) {
+                        "cancelled"
+                    }
+                }
+                val elapsedMs = (System.nanoTime() - started) / 1_000_000
+                assertEquals("cancelled", outcome)
+                assertTrue(elapsedMs < 1_000, "cancellation took ${elapsedMs}ms, expected under 1000ms")
+            } finally {
+                server.close()
+                accepter.interrupt()
+            }
+        }
     }
 
     // -- Error taxonomy -----------------------------------------------------

@@ -221,6 +221,56 @@
       "bytes": 2969,
       "sha256": "f72c778b7a250138c599f377ee927aca9f612c6374cb1fde9b218b84bc401c50",
       "recorded_at": "2026-11-14T14:37:24Z"
+    },
+    {
+      "name": "agent_skills_object",
+      "file": "agent_skills_object.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_Dr5oGSMrZZoPCDB7K8iutDCArp5UDCZpPNPYzxRf7yEV",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 1916,
+      "sha256": "b195176d2fbd8ec81e0635f9d3f9229938f27e37de90028f6040e8b20b1a1b07",
+      "recorded_at": "2026-11-15T21:49:23Z"
+    },
+    {
+      "name": "agent_reputation_fractional",
+      "file": "agent_reputation_fractional.json",
+      "url": "https://api.basedagents.ai/v1/agents/ag_QauCcoEZXYCT9LApxAhReiyTgcZwmoya9AEevtkjTFm/reputation",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 500,
+      "sha256": "a3e6abc655ec70f7d067eed8ef28d17c3fa6769eb7abdba69057e1e576d140f5",
+      "recorded_at": "2026-11-15T21:49:23Z"
+    },
+    {
+      "name": "task_creator_wallet",
+      "file": "task_creator_wallet.json",
+      "url": "https://api.basedagents.ai/v1/tasks/task_ILI16I1DYjTOabbUBRvV9",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 3683,
+      "sha256": "80b35dcec6bdd206522dae357e756b8f160be8b23f98fee0905e29019c63f84d",
+      "recorded_at": "2026-11-15T21:49:23Z"
+    },
+    {
+      "name": "chain_range",
+      "file": "chain_range.json",
+      "url": "https://api.basedagents.ai/v1/chain?from=2015&to=2019",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 3660,
+      "sha256": "d4826db9e6279673b69f491a62ecf2fd59ab0b3d9c76104e3de1f6eda9275e19",
+      "recorded_at": "2026-11-15T21:49:23Z"
+    },
+    {
+      "name": "chain_entry",
+      "file": "chain_entry.json",
+      "url": "https://api.basedagents.ai/v1/chain/2019",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 532,
+      "sha256": "43c06915ec8ed1f78f5611100dc8e98731b2d730acf99025f6103550f860005f",
+      "recorded_at": "2026-11-15T21:49:23Z"
     }
   ]
 }

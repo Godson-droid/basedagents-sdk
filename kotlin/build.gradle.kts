@@ -8,6 +8,7 @@ group = "ai.basedagents"
 version = "1.0.0"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -30,6 +31,9 @@ tasks.test {
 publishing {
     publications {
         create<MavenPublication>("maven") {
+            groupId = "ai.basedagents"
+            artifactId = "basedagents-sdk"
+            version = "1.0.0"
             from(components["java"])
         }
     }

@@ -2,6 +2,40 @@ import Foundation
 
 // MARK: - Agents
 
+/// One entry of an agent's `skills` list. On the live API these are objects
+/// (`{"name": ..., "registry": ..., "private": ...}`); very old profiles used
+/// bare strings, so decoding accepts both shapes.
+public struct AgentSkill: Codable, Equatable, Sendable {
+    public let name: String
+    public let registry: String?
+    public let isPrivate: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case name, registry
+        case isPrivate = "private"
+    }
+
+    public init(name: String, registry: String? = nil, isPrivate: Bool = false) {
+        self.name = name
+        self.registry = registry
+        self.isPrivate = isPrivate
+    }
+
+    public init(from decoder: Decoder) throws {
+        if let single = try? decoder.singleValueContainer(),
+           let bare = try? single.decode(String.self) {
+            name = bare
+            registry = nil
+            isPrivate = false
+            return
+        }
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        registry = try c.decodeIfPresent(String.self, forKey: .registry)
+        isPrivate = try c.decodeOrDefault(Bool.self, forKey: .isPrivate, default: false)
+    }
+}
+
 /// Aggregate ratings block on an agent profile.
 public struct Ratings: Codable, Equatable, Sendable {
     public let count: Int
@@ -59,7 +93,7 @@ public struct Agent: Codable, Equatable, Sendable {
     public let version: String?
     public let contactEmail: String?
     public let xHandle: String?
-    public let skills: [String]
+    public let skills: [AgentSkill]
     public let webhookUrl: String?
     public let walletAddress: String?
     public let walletNetwork: String?
@@ -119,7 +153,7 @@ public struct Agent: Codable, Equatable, Sendable {
         version = try c.decodeIfPresent(String.self, forKey: .version)
         contactEmail = try c.decodeIfPresent(String.self, forKey: .contactEmail)
         xHandle = try c.decodeIfPresent(String.self, forKey: .xHandle)
-        skills = try c.decodeOrDefault([String].self, forKey: .skills, default: [])
+        skills = try c.decodeOrDefault([AgentSkill].self, forKey: .skills, default: [])
         webhookUrl = try c.decodeIfPresent(String.self, forKey: .webhookUrl)
         walletAddress = try c.decodeIfPresent(String.self, forKey: .walletAddress)
         walletNetwork = try c.decodeIfPresent(String.self, forKey: .walletNetwork)
@@ -240,8 +274,9 @@ public struct Reputation: Codable, Equatable, Sendable {
     public let confidence: Double
     public let verificationsReceived: Int
     public let verificationsGiven: Int
-    public let tasksAccepted: Int
-    public let tasksFailed: Int
+    /// The API reports these as fractional scores (e.g. 0.508), not counts.
+    public let tasksAccepted: Double
+    public let tasksFailed: Double
 
     enum CodingKeys: String, CodingKey {
         case agentId = "agent_id"
@@ -268,8 +303,8 @@ public struct Reputation: Codable, Equatable, Sendable {
         confidence = try c.decodeOrDefault(Double.self, forKey: .confidence, default: 0)
         verificationsReceived = try c.decodeOrDefault(Int.self, forKey: .verificationsReceived, default: 0)
         verificationsGiven = try c.decodeOrDefault(Int.self, forKey: .verificationsGiven, default: 0)
-        tasksAccepted = try c.decodeOrDefault(Int.self, forKey: .tasksAccepted, default: 0)
-        tasksFailed = try c.decodeOrDefault(Int.self, forKey: .tasksFailed, default: 0)
+        tasksAccepted = try c.decodeOrDefault(Double.self, forKey: .tasksAccepted, default: 0)
+        tasksFailed = try c.decodeOrDefault(Double.self, forKey: .tasksFailed, default: 0)
     }
 }
 
@@ -347,6 +382,18 @@ public struct ChainCheckpoint: Codable, Equatable, Sendable {
         reason = try c.decodeIfPresent(String.self, forKey: .reason)
         documentedAt = try c.decodeIfPresent(String.self, forKey: .documentedAt)
     }
+}
+
+/// Envelope for `GET /v1/chain?from=&to=` — a range of registry chain entries.
+public struct ChainRangeEnvelope: Codable, Equatable, Sendable {
+    public let entries: [ChainEntry]
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        entries = try c.decodeOrDefault([ChainEntry].self, forKey: .entries, default: [])
+    }
+
+    enum CodingKeys: String, CodingKey { case entries }
 }
 
 /// The latest entry of the registry hash chain, from `GET /v1/chain/latest`.

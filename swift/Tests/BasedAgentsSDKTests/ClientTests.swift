@@ -1,3 +1,7 @@
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import XCTest
 @testable import BasedAgentsSDK
 
@@ -181,6 +185,114 @@ final class ClientTests: XCTestCase {
             transport.requestedURLs.map(\.absoluteString),
             ["https://api.example.test/v1/tasks/settled?limit=10&window_days=30"]
         )
+    }
+
+    func testSearchAgentsSendsPageParameter() async throws {
+        let transport = try transportServing(fixture: "agents_search_jarvis")
+        _ = try await makeClient(transport).searchAgents(query: "Jarvis", limit: 20, page: 2)
+        XCTAssertEqual(
+            transport.requestedURLs.map(\.absoluteString),
+            ["https://api.example.test/v1/agents/search?q=Jarvis&limit=20&page=2"]
+        )
+    }
+
+    func testAgentsStreamAggregatesEverySearchPage() async throws {
+        func pageJSON(ids: [String], page: Int, totalPages: Int) -> Data {
+            let agents = ids.map { #"{"agent_id":"\#($0)","name":"Agent \#($0)"}"# }.joined(separator: ",")
+            return Data(#"{"agents":[\#(agents)],"pagination":{"page":\#(page),"limit":2,"total":3,"total_pages":\#(totalPages)}}"#.utf8)
+        }
+        let transport = StubTransport { url in
+            if url.absoluteString.contains("page=2") {
+                return HTTPResponseData(statusCode: 200, body: pageJSON(ids: ["ag_3"], page: 2, totalPages: 2))
+            }
+            return HTTPResponseData(statusCode: 200, body: pageJSON(ids: ["ag_1", "ag_2"], page: 1, totalPages: 2))
+        }
+        var ids: [String] = []
+        for try await agent in makeClient(transport).agentsStream(query: "a", pageSize: 2) {
+            ids.append(agent.id)
+        }
+        XCTAssertEqual(ids, ["ag_1", "ag_2", "ag_3"])
+        XCTAssertEqual(transport.requestedURLs.count, 2)
+        XCTAssertTrue(transport.requestedURLs[0].absoluteString.contains("page=1"))
+        XCTAssertTrue(transport.requestedURLs[1].absoluteString.contains("page=2"))
+    }
+
+    func testTasksStreamClampsOversizedPageSizeToAPIMaximum() async throws {
+        let transport = transportReturning(status: 200, body: #"{"ok":true,"tasks":[]}"#)
+        var count = 0
+        for try await _ in makeClient(transport).tasksStream(pageSize: 500) { count += 1 }
+        XCTAssertEqual(count, 0)
+        XCTAssertEqual(transport.requestedURLs.count, 1)
+        let url = try XCTUnwrap(transport.requestedURLs.first?.absoluteString)
+        XCTAssertTrue(url.contains("limit=100"), "expected limit=100 in \(url)")
+    }
+
+    func testChainRangeAndEntryPaths() async throws {
+        let range = try transportServing(fixture: "chain_range")
+        let entries = try await makeClient(range).chainEntries(from: 2015, to: 2019)
+        XCTAssertEqual(entries.entries.count, 5)
+        XCTAssertEqual(
+            range.requestedURLs.map(\.absoluteString),
+            ["https://api.example.test/v1/chain?from=2015&to=2019"]
+        )
+
+        let single = try transportServing(fixture: "chain_entry")
+        let entry = try await makeClient(single).chainEntry(sequence: 2019)
+        XCTAssertEqual(entry.sequence, 2019)
+        XCTAssertEqual(
+            single.requestedURLs.map(\.absoluteString),
+            ["https://api.example.test/v1/chain/2019"]
+        )
+    }
+
+    func testConsumerTaskCompilesAlongsideSDKImport() async {
+        // This would not compile if the SDK still exported a `Task` model
+        // shadowing Swift concurrency's `Task`.
+        let task = Task { 42 }
+        let value = await task.value
+        XCTAssertEqual(value, 42)
+    }
+
+    func testCancelledCallAgainstStalledTransportEndsPromptly() async {
+        let client = makeClient(StallingTransport())
+        let task = Task { try await client.status() }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        let start = Date()
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("expected CancellationError")
+        } catch is CancellationError {
+            XCTAssertLessThan(Date().timeIntervalSince(start), 1.0)
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
+    func testURLSessionTransportCancellationAgainstStalledServer() async throws {
+        // An in-process server that accepts the connection and then stalls
+        // for 30 s: the request is genuinely in flight when cancelled.
+        let server = StalledServer()
+        try server.start()
+        defer { server.stop() }
+
+        let client = APIClient(
+            transport: URLSessionTransport(session: URLSession(configuration: .ephemeral)),
+            baseURL: URL(string: "http://127.0.0.1:\(server.port)/v1")!,
+            minRequestInterval: 0
+        )
+        let task = Task { try await client.status() }
+        try await Task.sleep(nanoseconds: 200_000_000)
+        let start = Date()
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("expected CancellationError")
+        } catch is CancellationError {
+            XCTAssertLessThan(Date().timeIntervalSince(start), 1.0)
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
     }
 
     // MARK: - Error taxonomy

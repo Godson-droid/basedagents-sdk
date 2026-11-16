@@ -37,7 +37,12 @@ let package = Package(
                 .copy("Resources/tasks_category_code.json"),
                 .copy("Resources/tasks_open.json"),
                 .copy("Resources/tasks_open_page.json"),
-                .copy("Resources/tasks_settled.json")
+                .copy("Resources/tasks_settled.json"),
+                .copy("Resources/agent_skills_object.json"),
+                .copy("Resources/agent_reputation_fractional.json"),
+                .copy("Resources/task_creator_wallet.json"),
+                .copy("Resources/chain_range.json"),
+                .copy("Resources/chain_entry.json")
             ]
         ),
     ]

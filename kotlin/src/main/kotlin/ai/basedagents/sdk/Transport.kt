@@ -1,13 +1,14 @@
 package ai.basedagents.sdk
 
 import java.io.IOException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse as JavaHttpResponse
-import java.time.Duration
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /** A raw HTTP response as seen by the client: status, headers and body text. */
 data class HttpResponse(
@@ -23,6 +24,10 @@ data class HttpResponse(
  * for transport-level failures, which the client maps to
  * [BasedAgentsException.NetworkError].
  *
+ * Implementations must also honour coroutine cancellation: when the calling
+ * coroutine is cancelled, the in-flight request must be abandoned promptly
+ * and a [kotlinx.coroutines.CancellationException] must surface.
+ *
  * Tests substitute a fake implementation, so the whole client is exercisable
  * offline.
  */
@@ -31,45 +36,73 @@ fun interface HttpTransport {
 }
 
 /**
- * Production transport backed by `java.net.http.HttpClient`.
+ * Production transport backed by [HttpURLConnection].
+ *
+ * `HttpURLConnection` is part of both the JDK and Android, so this default
+ * transport works on Android as well as the JVM — unlike the desktop-only
+ * HttpClient API, which Android does not ship. The blocking socket work runs on a daemon
+ * worker thread; cancelling the calling coroutine disconnects the
+ * connection, which unblocks the read immediately, and the coroutine
+ * resumes with [kotlinx.coroutines.CancellationException].
  *
  * Identifies itself with a descriptive `User-Agent` and asks for JSON.
  * Redirects are not followed: the API answers directly, and a redirect in
  * response to an API call is a configuration error worth surfacing.
  */
-class UrlHttpTransport(
-    private val connectTimeout: Duration = Duration.ofSeconds(10),
-    private val requestTimeout: Duration = Duration.ofSeconds(30),
+class UrlConnectionTransport(
+    private val connectTimeoutMillis: Int = 10_000,
+    private val readTimeoutMillis: Int = 30_000,
     private val userAgent: String = "basedagents-sdk-kotlin/1.0",
 ) : HttpTransport {
 
-    private val client: HttpClient by lazy {
-        HttpClient.newBuilder()
-            .connectTimeout(connectTimeout)
-            .followRedirects(HttpClient.Redirect.NEVER)
-            .build()
+    private val executor = Executors.newCachedThreadPool { runnable ->
+        Thread(runnable, "basedagents-http").apply { isDaemon = true }
     }
 
-    override suspend fun get(url: String): HttpResponse {
-        val request = HttpRequest.newBuilder(URI.create(url))
-            .timeout(requestTimeout)
-            .header("Accept", "application/json")
-            .header("User-Agent", userAgent)
-            .GET()
-            .build()
-        // send() blocks; keep it off the caller's dispatcher.
-        val response = withContext(Dispatchers.IO) {
-            try {
-                client.send(request, JavaHttpResponse.BodyHandlers.ofString())
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-                throw IOException("Interrupted while requesting $url", e)
+    override suspend fun get(url: String): HttpResponse =
+        suspendCancellableCoroutine { continuation ->
+            val connection = AtomicReference<HttpURLConnection?>(null)
+            val future: Future<*> = executor.submit {
+                try {
+                    val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                        requestMethod = "GET"
+                        connectTimeout = connectTimeoutMillis
+                        readTimeout = readTimeoutMillis
+                        instanceFollowRedirects = false
+                        setRequestProperty("Accept", "application/json")
+                        setRequestProperty("User-Agent", userAgent)
+                    }
+                    connection.set(conn)
+                    if (continuation.isCancelled) {
+                        conn.disconnect()
+                        return@submit
+                    }
+                    val status = conn.responseCode
+                    val stream = if (status in 200..299) conn.inputStream else conn.errorStream
+                    val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+                    val headers = conn.headerFields
+                        .filterKeys { it != null }
+                        .mapKeys { it.key!! }
+                    conn.disconnect()
+                    if (continuation.isActive) {
+                        continuation.resume(HttpResponse(status, headers, body))
+                    }
+                } catch (e: Exception) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(
+                            if (e is IOException) e
+                            else IOException("Request to $url failed: ${e.message}", e),
+                        )
+                    }
+                }
+            }
+            continuation.invokeOnCancellation {
+                future.cancel(true)
+                try {
+                    connection.get()?.disconnect()
+                } catch (_: Exception) {
+                    // Best effort: the worker thread also checks isCancelled.
+                }
             }
         }
-        return HttpResponse(
-            statusCode = response.statusCode(),
-            headers = response.headers().map(),
-            body = response.body(),
-        )
-    }
 }

@@ -21,16 +21,46 @@ public struct HTTPResponseData: Sendable {
 /// maps those to `BasedAgentsError`); they throw only for transport-level
 /// failures, which the client maps to `BasedAgentsError.network`.
 ///
-/// Tests substitute a stub implementation, so the whole client is
-/// exercisable offline.
+/// Implementations must also honour Swift task cancellation: when the
+/// calling task is cancelled, the in-flight request must be abandoned
+/// promptly and a `CancellationError` must surface.
 public protocol HTTPTransport: Sendable {
     func get(_ url: URL) async throws -> HTTPResponseData
+}
+
+/// Holds the in-flight data task so a cancellation arriving before, during
+/// or after task creation still cancels it exactly once.
+private final class DataTaskBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var task: URLSessionDataTask?
+    private var cancelled = false
+
+    func set(_ task: URLSessionDataTask) {
+        lock.lock()
+        self.task = task
+        let wasCancelled = cancelled
+        lock.unlock()
+        if wasCancelled { task.cancel() }
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        let task = self.task
+        lock.unlock()
+        task?.cancel()
+    }
 }
 
 /// Production transport backed by `URLSession`.
 ///
 /// Identifies itself with a descriptive `User-Agent` and asks for JSON.
 /// Redirects are left to `URLSession`'s defaults; the API answers directly.
+///
+/// Cancellation: the underlying `URLSessionDataTask` is cancelled as soon
+/// as the awaiting Swift task is cancelled, so a call against a stalled
+/// server ends immediately with `CancellationError` instead of running
+/// until the request timeout.
 public struct URLSessionTransport: HTTPTransport {
     private let session: URLSession
     private let userAgent: String
@@ -53,17 +83,27 @@ public struct URLSessionTransport: HTTPTransport {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-        let (data, response): (Data, URLResponse) = try await withCheckedThrowingContinuation { continuation in
-            let task = session.dataTask(with: request) { data, response, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if let data, let response {
-                    continuation.resume(returning: (data, response))
-                } else {
-                    continuation.resume(throwing: URLError(.badServerResponse))
+        let box = DataTaskBox()
+        let (data, response): (Data, URLResponse) = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(Data, URLResponse), Error>) in
+                let task = session.dataTask(with: request) { data, response, error in
+                    if let error {
+                        if let urlError = error as? URLError, urlError.code == .cancelled {
+                            continuation.resume(throwing: CancellationError())
+                        } else {
+                            continuation.resume(throwing: error)
+                        }
+                    } else if let data, let response {
+                        continuation.resume(returning: (data, response))
+                    } else {
+                        continuation.resume(throwing: URLError(.badServerResponse))
+                    }
                 }
+                box.set(task)
+                task.resume()
             }
-            task.resume()
+        } onCancel: {
+            box.cancel()
         }
 
         guard let http = response as? HTTPURLResponse else {

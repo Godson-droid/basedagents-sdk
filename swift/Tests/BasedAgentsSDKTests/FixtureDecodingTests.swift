@@ -207,6 +207,48 @@ final class FixtureDecodingTests: XCTestCase {
         XCTAssertEqual(descriptor.api?.base, "https://api.basedagents.ai/v1")
     }
 
+    func testAgentSkillsDecodeAsObjects() throws {
+        let agent = try Fixtures.decode("agent_skills_object", as: Agent.self)
+        XCTAssertEqual(agent.name, "Hans")
+        XCTAssertEqual(agent.skills.count, 8)
+        let first = try XCTUnwrap(agent.skills.first)
+        XCTAssertEqual(first.name, "openclaw")
+        XCTAssertEqual(first.registry, "clawhub")
+        XCTAssertFalse(first.isPrivate)
+        XCTAssertEqual(agent.skills[1].name, "@anthropic-ai/sdk")
+        XCTAssertEqual(agent.skills[1].registry, "npm")
+    }
+
+    func testFractionalReputationTasksAcceptedDecodes() throws {
+        let reputation = try Fixtures.decode("agent_reputation_fractional", as: Reputation.self)
+        XCTAssertEqual(reputation.tasksAccepted, 6.064, accuracy: 1e-9)
+        XCTAssertEqual(reputation.tasksFailed, 0, accuracy: 1e-9)
+    }
+
+    func testTaskWithWalletCreatorAndNullCreatorIdDecodes() throws {
+        let detail = try Fixtures.decode("task_creator_wallet", as: TaskDetail.self)
+        XCTAssertEqual(detail.task.id, "task_ILI16I1DYjTOabbUBRvV9")
+        let creator = try XCTUnwrap(detail.task.creator)
+        XCTAssertEqual(creator.kind, "wallet")
+        XCTAssertNil(creator.id)
+        XCTAssertEqual(creator.wallet, "0x16d4479a4dfbdd6231b5ce686d2eedd04809e7e8")
+    }
+
+    func testChainRangeDecodesEveryEntryInSequence() throws {
+        let range = try Fixtures.decode("chain_range", as: ChainRangeEnvelope.self)
+        XCTAssertEqual(range.entries.count, 5)
+        XCTAssertEqual(range.entries.map(\.sequence), [2015, 2016, 2017, 2018, 2019])
+        XCTAssertEqual(range.entries[0].entryHash, range.entries[1].previousHash)
+    }
+
+    func testSingleChainEntryDecodes() throws {
+        let entry = try Fixtures.decode("chain_entry", as: ChainEntry.self)
+        XCTAssertEqual(entry.sequence, 2019)
+        XCTAssertEqual(entry.agentName, "Jarvis")
+        XCTAssertEqual(entry.entryType, "registration")
+        XCTAssertEqual(entry.agentId, "ag_5Mr7gZFJhQRy7nESV86U7zduaoeUh7ss7SLKvH46KUZD")
+    }
+
     func testErrorBodiesDecode() throws {
         let notFound = try Fixtures.decode("error_task_not_found", as: APIErrorBody.self)
         XCTAssertEqual(notFound.error, "not_found")

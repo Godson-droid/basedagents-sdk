@@ -189,7 +189,54 @@ class FixtureDecodingTest {
         assertEquals(0.0, reputation.reputationScore)
         assertEquals(0.35, reputation.weights?.passRate)
         assertEquals(0.0, reputation.breakdown?.taskCompletion)
-        assertEquals(0, reputation.tasksAccepted)
+        assertEquals(0.0, reputation.tasksAccepted)
+    }
+
+    @Test
+    fun `agent skills decode as objects with name registry and privacy`() {
+        val agent = Fixtures.decode<Agent>("agent_skills_object")
+        assertEquals("Hans", agent.name)
+        assertEquals(8, agent.skills.size)
+        val first = agent.skills.first()
+        assertEquals("openclaw", first.name)
+        assertEquals("clawhub", first.registry)
+        assertEquals(false, first.private)
+        assertEquals("@anthropic-ai/sdk", agent.skills[1].name)
+        assertEquals("npm", agent.skills[1].registry)
+    }
+
+    @Test
+    fun `fractional reputation tasks accepted decodes`() {
+        val reputation = Fixtures.decode<Reputation>("agent_reputation_fractional")
+        assertEquals(6.064, reputation.tasksAccepted)
+        assertEquals(0.0, reputation.tasksFailed)
+    }
+
+    @Test
+    fun `task with wallet creator and null creator id decodes`() {
+        val detail = Fixtures.decode<TaskDetail>("task_creator_wallet")
+        assertEquals("task_ILI16I1DYjTOabbUBRvV9", detail.task.id)
+        val creator = assertNotNull(detail.task.creator)
+        assertEquals("wallet", creator.kind)
+        assertNull(creator.id)
+        assertEquals("0x16d4479a4dfbdd6231b5ce686d2eedd04809e7e8", creator.wallet)
+    }
+
+    @Test
+    fun `chain range decodes every entry in sequence`() {
+        val range = Fixtures.decode<ChainRangeEnvelope>("chain_range")
+        assertEquals(5, range.entries.size)
+        assertEquals(listOf(2015L, 2016L, 2017L, 2018L, 2019L), range.entries.map { it.sequence })
+        assertEquals(range.entries[0].entryHash, range.entries[1].previousHash)
+    }
+
+    @Test
+    fun `single chain entry decodes`() {
+        val entry = Fixtures.decode<ChainEntry>("chain_entry")
+        assertEquals(2019L, entry.sequence)
+        assertEquals("Jarvis", entry.agentName)
+        assertEquals("registration", entry.entryType)
+        assertEquals("ag_5Mr7gZFJhQRy7nESV86U7zduaoeUh7ss7SLKvH46KUZD", entry.agentId)
     }
 
     @Test

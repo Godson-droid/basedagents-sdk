@@ -77,13 +77,16 @@ class BasedAgentsClient(
         const val DEFAULT_DESCRIPTOR_URL = "https://basedagents.ai/.well-known/basedagents.json"
         const val DEFAULT_MIN_REQUEST_INTERVAL_MS = 350L
 
-        /** A client wired to the production [UrlHttpTransport]. */
+        /** The API rejects page sizes above this with HTTP 400. */
+        const val MAX_PAGE_SIZE = 100
+
+        /** A client wired to the production [UrlConnectionTransport]. */
         fun live(
             baseUrl: String = DEFAULT_BASE_URL,
             descriptorUrl: String = DEFAULT_DESCRIPTOR_URL,
             minRequestIntervalMillis: Long = DEFAULT_MIN_REQUEST_INTERVAL_MS,
         ): BasedAgentsClient = BasedAgentsClient(
-            transport = UrlHttpTransport(),
+            transport = UrlConnectionTransport(),
             baseUrl = baseUrl,
             descriptorUrl = descriptorUrl,
             minRequestIntervalMillis = minRequestIntervalMillis,
@@ -124,7 +127,9 @@ class BasedAgentsClient(
             "/tasks",
             "status" to status, "category" to category, "capability" to capability,
             "creator" to creator, "claimer" to claimer, "min_usdc" to minUsdc,
-            "limit" to limit?.toString(), "offset" to offset?.toString(),
+            // The board rejects page sizes above 100 with HTTP 400; clamp.
+            "limit" to limit?.coerceIn(1, MAX_PAGE_SIZE)?.toString(),
+            "offset" to offset?.toString(),
         ),
         TaskListEnvelope.serializer(),
     )
@@ -169,17 +174,24 @@ class BasedAgentsClient(
     suspend fun getAgent(agentId: String): Agent =
         get(url("/agents/$agentId"), Agent.serializer())
 
-    /** `GET /v1/agents/search` — full-text / capability search over profiles. */
+    /**
+     * `GET /v1/agents/search` — full-text / capability search over profiles.
+     * Results are paged: pass [page] (1-based) and read
+     * [SearchPagination.totalPages] from the response, or use [agentsFlow]
+     * to stream every page.
+     */
     suspend fun searchAgents(
         query: String? = null,
         status: String? = null,
         capabilities: String? = null,
         limit: Int? = null,
+        page: Int? = null,
     ): AgentSearchEnvelope = get(
         url(
             "/agents/search",
             "q" to query, "status" to status, "capabilities" to capabilities,
-            "limit" to limit?.toString(),
+            "limit" to limit?.coerceIn(1, MAX_PAGE_SIZE)?.toString(),
+            "page" to page?.toString(),
         ),
         AgentSearchEnvelope.serializer(),
     )
@@ -198,6 +210,16 @@ class BasedAgentsClient(
     suspend fun chainLatest(): ChainEntry =
         get("$baseUrl/chain/latest", ChainEntry.serializer())
 
+    /** `GET /v1/chain?from=&to=` — a range of registry hash chain entries. */
+    suspend fun chainEntries(from: Long? = null, to: Long? = null): ChainRangeEnvelope = get(
+        url("/chain", "from" to from?.toString(), "to" to to?.toString()),
+        ChainRangeEnvelope.serializer(),
+    )
+
+    /** `GET /v1/chain/{sequence}` — one registry hash chain entry by sequence. */
+    suspend fun chainEntry(sequence: Long): ChainEntry =
+        get(url("/chain/$sequence"), ChainEntry.serializer())
+
     // -- Pagination ---------------------------------------------------------
 
     /**
@@ -214,17 +236,44 @@ class BasedAgentsClient(
         minUsdc: String? = null,
         pageSize: Int = 20,
     ): Flow<Task> = flow {
-        require(pageSize > 0) { "pageSize must be positive" }
+        // The board rejects page sizes above 100 (HTTP 400); clamp into range.
+        val effectivePageSize = pageSize.coerceIn(1, MAX_PAGE_SIZE)
         var offset = 0
         while (true) {
             val page = listTasks(
                 status = status, category = category, capability = capability,
                 creator = creator, claimer = claimer, minUsdc = minUsdc,
-                limit = pageSize, offset = offset,
+                limit = effectivePageSize, offset = offset,
             )
             page.tasks.forEach { emit(it) }
-            if (page.tasks.size < pageSize) break
+            if (page.tasks.size < effectivePageSize) break
             offset += page.tasks.size
+        }
+    }
+
+    /**
+     * Streams every agent matching a search, following the search endpoint's
+     * `page`/`total_pages` pagination until the last page. Pages are fetched
+     * lazily as the flow is collected, and each fetch goes through the
+     * pacing gate.
+     */
+    fun agentsFlow(
+        query: String? = null,
+        status: String? = null,
+        capabilities: String? = null,
+        pageSize: Int = 20,
+    ): Flow<Agent> = flow {
+        val effectivePageSize = pageSize.coerceIn(1, MAX_PAGE_SIZE)
+        var pageNumber = 1
+        while (true) {
+            val result = searchAgents(
+                query = query, status = status, capabilities = capabilities,
+                limit = effectivePageSize, page = pageNumber,
+            )
+            result.agents.forEach { emit(it) }
+            val totalPages = result.pagination?.totalPages ?: 1
+            if (pageNumber >= totalPages || result.agents.isEmpty()) break
+            pageNumber++
         }
     }
 

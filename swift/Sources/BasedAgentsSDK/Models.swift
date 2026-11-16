@@ -77,21 +77,24 @@ public struct AgentRef: Codable, Equatable, Sendable {
 /// The `creator` block embedded in a full task record.
 public struct CreatorRef: Codable, Equatable, Sendable {
     public let kind: String?
-    public let id: String
+    /// Null for wallet/owner creators, which are identified by `wallet` instead.
+    public let id: String?
     public let shortId: String?
+    public let wallet: String?
     public let name: String?
     public let cert: String?
 
     enum CodingKeys: String, CodingKey {
-        case kind, id, name, cert
+        case kind, id, name, cert, wallet
         case shortId = "short_id"
     }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         kind = try c.decodeIfPresent(String.self, forKey: .kind)
-        id = try c.decode(String.self, forKey: .id)
+        id = try c.decodeIfPresent(String.self, forKey: .id)
         shortId = try c.decodeIfPresent(String.self, forKey: .shortId)
+        wallet = try c.decodeIfPresent(String.self, forKey: .wallet)
         name = try c.decodeIfPresent(String.self, forKey: .name)
         cert = try c.decodeIfPresent(String.self, forKey: .cert)
     }
@@ -101,7 +104,10 @@ public struct CreatorRef: Codable, Equatable, Sendable {
 
 /// A full task record, as returned by `GET /v1/tasks` (list items) and
 /// `GET /v1/tasks/{id}` (inside `TaskDetail`).
-public struct Task: Codable, Equatable, Sendable {
+///
+/// Named `BoardTask` rather than `Task` so importing this module never
+/// shadows Swift concurrency's `Task` in consumer code.
+public struct BoardTask: Codable, Equatable, Sendable {
     public let id: String
     public let creatorAgentId: String?
     public let creatorKind: String?
@@ -260,12 +266,12 @@ public struct Task: Codable, Equatable, Sendable {
 /// Envelope for `GET /v1/tasks`.
 public struct TaskListEnvelope: Codable, Equatable, Sendable {
     public let ok: Bool
-    public let tasks: [Task]
+    public let tasks: [BoardTask]
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         ok = try c.decodeOrDefault(Bool.self, forKey: .ok, default: false)
-        tasks = try c.decodeOrDefault([Task].self, forKey: .tasks, default: [])
+        tasks = try c.decodeOrDefault([BoardTask].self, forKey: .tasks, default: [])
     }
 
     enum CodingKeys: String, CodingKey { case ok, tasks }
@@ -303,7 +309,7 @@ public struct SubmissionInfo: Codable, Equatable, Sendable {
 /// Envelope for `GET /v1/tasks/{id}`.
 public struct TaskDetail: Codable, Equatable, Sendable {
     public let ok: Bool
-    public let task: Task
+    public let task: BoardTask
     public let submission: SubmissionInfo?
     public let hasSubmission: Bool
     public let submissionPublic: Bool
@@ -322,7 +328,7 @@ public struct TaskDetail: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         ok = try c.decodeOrDefault(Bool.self, forKey: .ok, default: false)
-        task = try c.decode(Task.self, forKey: .task)
+        task = try c.decode(BoardTask.self, forKey: .task)
         submission = try c.decodeIfPresent(SubmissionInfo.self, forKey: .submission)
         hasSubmission = try c.decodeOrDefault(Bool.self, forKey: .hasSubmission, default: false)
         submissionPublic = try c.decodeOrDefault(Bool.self, forKey: .submissionPublic, default: false)
@@ -562,7 +568,7 @@ public struct SettledStats: Codable, Equatable, Sendable {
     }
 }
 
-/// A settled-task summary row (a slimmer shape than the full `Task`).
+/// A settled-task summary row (a slimmer shape than the full `BoardTask`).
 public struct SettledTask: Codable, Equatable, Sendable {
     public let id: String
     public let title: String

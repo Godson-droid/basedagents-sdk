@@ -1,9 +1,7 @@
 import Foundation
 
-// The SDK defines its own `Task` model type, which shadows the
-// concurrency `Task` inside this module; the streams below need the
-// concurrency one, aliased here once.
-private typealias ConcurrencyTask = _Concurrency.Task
+// The SDK's task model is named `BoardTask`, so nothing in this module
+// shadows Swift concurrency's `Task`.
 
 /// Enforces a minimum interval between outgoing requests so SDK consumers
 /// are polite API citizens by default. Slots are reserved under a lock, so
@@ -33,7 +31,7 @@ final class RequestPacer: @unchecked Sendable {
             return 0
         }()
         if delay > 0 {
-            try await ConcurrencyTask.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
         }
     }
 }
@@ -126,7 +124,8 @@ public final class APIClient: Sendable {
             makeURL(path: "/tasks", query: [
                 ("status", status), ("category", category), ("capability", capability),
                 ("creator", creator), ("claimer", claimer), ("min_usdc", minUsdc),
-                ("limit", limit.map(String.init)), ("offset", offset.map(String.init)),
+                // The board rejects page sizes above 100 with HTTP 400; clamp.
+                ("limit", limit.map { String($0.clampedToPageSize) }), ("offset", offset.map(String.init)),
             ]),
             as: TaskListEnvelope.self
         )
@@ -177,16 +176,20 @@ public final class APIClient: Sendable {
     }
 
     /// `GET /v1/agents/search` — full-text / capability search over profiles.
+    /// Results are paged: pass `page` (1-based) and read `totalPages` from
+    /// the response's pagination, or use `agentsStream` to stream every page.
     public func searchAgents(
         query: String? = nil,
         status: String? = nil,
         capabilities: String? = nil,
-        limit: Int? = nil
+        limit: Int? = nil,
+        page: Int? = nil
     ) async throws -> AgentSearchEnvelope {
         try await get(
             makeURL(path: "/agents/search", query: [
                 ("q", query), ("status", status), ("capabilities", capabilities),
-                ("limit", limit.map(String.init)),
+                ("limit", limit.map { String($0.clampedToPageSize) }),
+                ("page", page.map(String.init)),
             ]),
             as: AgentSearchEnvelope.self
         )
@@ -209,6 +212,21 @@ public final class APIClient: Sendable {
         try await get(makeURL(path: "/chain/latest"), as: ChainEntry.self)
     }
 
+    /// `GET /v1/chain?from=&to=` — a range of registry hash chain entries.
+    public func chainEntries(from: Int64? = nil, to: Int64? = nil) async throws -> ChainRangeEnvelope {
+        try await get(
+            makeURL(path: "/chain", query: [
+                ("from", from.map(String.init)), ("to", to.map(String.init)),
+            ]),
+            as: ChainRangeEnvelope.self
+        )
+    }
+
+    /// `GET /v1/chain/{sequence}` — one registry hash chain entry by sequence.
+    public func chainEntry(sequence: Int64) async throws -> ChainEntry {
+        try await get(makeURL(path: "/chain/\(sequence)"), as: ChainEntry.self)
+    }
+
     // MARK: - Pagination
 
     /// Streams the whole board matching the filters, following offset/limit
@@ -222,20 +240,56 @@ public final class APIClient: Sendable {
         claimer: String? = nil,
         minUsdc: String? = nil,
         pageSize: Int = 20
-    ) -> AsyncThrowingStream<Task, Error> {
-        AsyncThrowingStream { continuation in
-            let task = ConcurrencyTask {
+    ) -> AsyncThrowingStream<BoardTask, Error> {
+        // The board rejects page sizes above 100 (HTTP 400); clamp into range.
+        let effectivePageSize = pageSize.clampedToPageSize
+        return AsyncThrowingStream { continuation in
+            let task = Task {
                 do {
                     var offset = 0
                     while true {
                         let page = try await self.listTasks(
                             status: status, category: category, capability: capability,
                             creator: creator, claimer: claimer, minUsdc: minUsdc,
-                            limit: pageSize, offset: offset
+                            limit: effectivePageSize, offset: offset
                         )
                         for item in page.tasks { continuation.yield(item) }
-                        if page.tasks.count < pageSize { break }
+                        if page.tasks.count < effectivePageSize { break }
                         offset += page.tasks.count
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    /// Streams every agent matching a search, following the search
+    /// endpoint's `page`/`totalPages` pagination until the last page.
+    /// Pages are fetched lazily as the stream is consumed, and each fetch
+    /// goes through the pacing gate.
+    public func agentsStream(
+        query: String? = nil,
+        status: String? = nil,
+        capabilities: String? = nil,
+        pageSize: Int = 20
+    ) -> AsyncThrowingStream<Agent, Error> {
+        let effectivePageSize = pageSize.clampedToPageSize
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    var pageNumber = 1
+                    while true {
+                        let result = try await self.searchAgents(
+                            query: query, status: status, capabilities: capabilities,
+                            limit: effectivePageSize, page: pageNumber
+                        )
+                        for agent in result.agents { continuation.yield(agent) }
+                        let totalPages = result.pagination?.totalPages ?? 1
+                        if pageNumber >= totalPages || result.agents.isEmpty { break }
+                        pageNumber += 1
                     }
                     continuation.finish()
                 } catch {
@@ -250,7 +304,7 @@ public final class APIClient: Sendable {
     /// handing out a next one.
     public func settledStream(limit: Int = 10, windowDays: Int? = nil) -> AsyncThrowingStream<SettledTask, Error> {
         AsyncThrowingStream { continuation in
-            let task = ConcurrencyTask {
+            let task = Task {
                 do {
                     var cursor: String? = nil
                     while true {
@@ -277,7 +331,10 @@ public final class APIClient: Sendable {
             response = try await transport.get(url)
         } catch is CancellationError {
             throw CancellationError()
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            throw CancellationError()
         } catch {
+            if Task.isCancelled { throw CancellationError() }
             throw BasedAgentsError.network(underlying: error)
         }
         guard (200...299).contains(response.statusCode) else {
@@ -317,6 +374,9 @@ public final class APIClient: Sendable {
         return nil
     }
 
+    /// The API rejects page sizes above 100 with HTTP 400.
+    public static let maxPageSize = 100
+
     private func makeURL(path: String, query: [(String, String?)] = []) -> URL {
         var urlString = baseURL.absoluteString
         while urlString.hasSuffix("/") { urlString.removeLast() }
@@ -333,4 +393,9 @@ public final class APIClient: Sendable {
         }
         return URL(string: urlString)!
     }
+}
+
+extension Int {
+    /// Clamps a requested page size into the range the API accepts (1...100).
+    var clampedToPageSize: Int { Swift.min(Swift.max(self, 1), APIClient.maxPageSize) }
 }
