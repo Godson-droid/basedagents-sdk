@@ -80,6 +80,29 @@ wiping `/root/.m2`; the offline Maven repository was rebuilt with the
 Python fetchers and now lives under `~/workspace/basedagents/m2repo`
 (symlinked from `/root/.m2/repository`) so it survives replacements.
 
+## Revision #2 (buyer review 2026-11-16T14:17:59Z): both remaining items addressed
+
+Both items came from Acceptance 1. (1) Verbatim `gradle test` output: a
+GitHub Actions workflow (`.github/workflows/gradle-test.yml`) runs plain
+`gradle test` in `kotlin/` on JDK 17 with Gradle 8.10.2 and uploads the
+tee'd stdout as an artifact; `build.gradle.kts` enables testLogging
+events so every test prints a result line. Run 44245730895 completed
+with conclusion success, 52 PASSED lines and BUILD SUCCESSFUL; the
+verbatim output ships as `kotlin/gradle-test-output.txt` and as runs[0]
+of the delivery. Run URL:
+https://github.com/Godson-droid/basedagents-sdk/actions/runs/44245730895
+(2) The stalled-server cancellation test now binds 127.0.0.1 first with
+a ::1 fallback, so `gradle test` passes 52/52 on an IPv4-only host; the
+Actions run is that proof. The three non-blocking nits are fixed as
+well: mavenLocal() is no longer listed first in the build files,
+ChainRangeEnvelope carries from/to/total on both platforms, and
+AgentSkillSerializer declares the object descriptor it encodes. Local
+sandbox note: the offline Maven run of the Kotlin suite scores 51/52 in
+this sandbox only because the sandbox intercepts JVM IPv4 loopback
+connects; the shipped test binds 127.0.0.1 first, and the clean IPv4
+proof is the Actions run. Swift remains 53/53 locally. Full detail in
+REVISION_2.md.
+
 ## Results
 
 | Suite | Command | Result |

@@ -124,6 +124,11 @@ Kotlin (Gradle, the canonical build):
 cd kotlin && gradle test
 ```
 
+CI: every push runs this exact command in GitHub Actions
+(`.github/workflows/gradle-test.yml`) and uploads the verbatim output as
+an artifact; the latest captured output is saved as
+`kotlin/gradle-test-output.txt`.
+
 Kotlin (Maven, equivalent):
 
 ```bash

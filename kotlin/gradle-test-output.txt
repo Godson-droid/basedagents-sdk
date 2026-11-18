@@ -1,21 +1,131 @@
-=== BasedAgents SDK — gradle test attempt in the build sandbox (Revision 1) ===
-Command: gradle test
-Gradle 8.10.2 (~/tools/gradle-8.10.2), OpenJDK 21 (Temurin)
-Date: 2026-11-16T03:55:05Z
 
-Verbatim output:
+Welcome to Gradle 8.10.2!
+
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
 
 Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources NO-SOURCE
+> Task :processTestResources
+> Task :compileKotlin
+> Task :compileJava NO-SOURCE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :compileTestKotlin
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses
 
-FAILURE: Build failed with an exception.
+> Task :test
 
-* What went wrong:
-Could not receive a message from the daemon.
+ClientTest > settledFlow follows the cursor to the end() PASSED
 
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
+ClientTest > chain range and entry paths() PASSED
 
-Note: the Gradle daemon communicates over IPv4 loopback TCP, which this sandbox's network layer intercepts for every JVM process (verified environment constraint; the daemon binds 127.0.0.1 only and the client receives garbage). Gradle therefore cannot execute in this sandbox at all. The identical build (same build.gradle.kts, same sources, same dependency versions) is executed here through the Maven runner; its verbatim output is in test-output.txt (52 tests, 0 failures, BUILD SUCCESS). The buyer reproduced 'gradle test' 41/41 in their own environment for the original delivery.
+ClientTest > truncated success body maps to DecodeError() PASSED
+
+ClientTest > listTasks encodes filters and paging params() PASSED
+
+ClientTest > searchAgents sends the page parameter() PASSED
+
+ClientTest > 429 maps to RateLimited with retry-after() PASSED
+
+ClientTest > tasksFlow aggregates offset pages until a short page() PASSED
+
+ClientTest > cancelled call against a stalled transport ends promptly with CancellationException() PASSED
+
+ClientTest > 500 maps to ServerError() PASSED
+
+ClientTest > tasksFlow clamps an oversized pageSize to the api maximum() PASSED
+
+ClientTest > settled list request carries limit and window() PASSED
+
+ClientTest > error body that is not json still maps by status() PASSED
+
+ClientTest > other statuses map to UnexpectedStatus() PASSED
+
+ClientTest > transport failure maps to NetworkError() PASSED
+
+ClientTest > 401 maps to Unauthorized() PASSED
+
+ClientTest > agentsFlow aggregates every search page() PASSED
+
+ClientTest > 403 maps to Unauthorized() PASSED
+
+ClientTest > status health chain and descriptor paths() PASSED
+
+ClientTest > receipts and payment paths() PASSED
+
+ClientTest > 404 maps to NotFound carrying the api error() PASSED
+
+ClientTest > tasksFlow stops after a partial page() PASSED
+
+ClientTest > agent endpoints build expected paths() PASSED
+
+ClientTest > listTasks builds the tasks path with query params() PASSED
+
+ClientTest > getTask hits the detail path() PASSED
+
+ClientTest > malformed success body maps to DecodeError() PASSED
+
+ClientTest > default transport cancellation abandons a stalled server within a second() PASSED
+
+FixtureDecodingTest > service descriptor decodes its stable head() PASSED
+
+FixtureDecodingTest > health fixture decodes() PASSED
+
+FixtureDecodingTest > settled payment details decode escrow and audit events() PASSED
+
+FixtureDecodingTest > fractional reputation tasks accepted decodes() PASSED
+
+FixtureDecodingTest > agent profile decodes() PASSED
+
+FixtureDecodingTest > agent profile with null wallet decodes() PASSED
+
+FixtureDecodingTest > single receipt envelope decodes() PASSED
+
+FixtureDecodingTest > wallet decodes with its binding proof() PASSED
+
+FixtureDecodingTest > settled task detail has a bounty and a released escrow() PASSED
+
+FixtureDecodingTest > category page contains only that category() PASSED
+
+FixtureDecodingTest > reputation decodes score breakdown and weights() PASSED
+
+FixtureDecodingTest > task detail envelope decodes nested payment and receipt() PASSED
+
+FixtureDecodingTest > status fixture decodes with registry counters() PASSED
+
+FixtureDecodingTest > second task detail decodes() PASSED
+
+FixtureDecodingTest > open tasks envelope decodes all tasks() PASSED
+
+FixtureDecodingTest > chain range decodes every entry in sequence() PASSED
+
+FixtureDecodingTest > error bodies decode() PASSED
+
+FixtureDecodingTest > second page is the offset slice of the first() PASSED
+
+FixtureDecodingTest > task with wallet creator and null creator id decodes() PASSED
+
+FixtureDecodingTest > agent skills decode as objects with name registry and privacy() PASSED
+
+FixtureDecodingTest > single chain entry decodes() PASSED
+
+FixtureDecodingTest > agent search decodes results and pagination() PASSED
+
+FixtureDecodingTest > unpaid payment details decode with unavailable requirements() PASSED
+
+FixtureDecodingTest > chain latest decodes head entry and checkpoints() PASSED
+
+FixtureDecodingTest > settled envelope decodes stats cursor and summaries() PASSED
+
+FixtureDecodingTest > receipts list decodes() PASSED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1794980374598.json
+
+BUILD SUCCESSFUL in 56s
+5 actionable tasks: 5 executed
