@@ -8,8 +8,8 @@ plugins {
 // ../ (the SDK project) with `gradle publishToMavenLocal` or `mvn install`,
 // then this project builds as-is against the documented coordinates.
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {

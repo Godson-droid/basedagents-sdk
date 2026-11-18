@@ -387,13 +387,22 @@ public struct ChainCheckpoint: Codable, Equatable, Sendable {
 /// Envelope for `GET /v1/chain?from=&to=` — a range of registry chain entries.
 public struct ChainRangeEnvelope: Codable, Equatable, Sendable {
     public let entries: [ChainEntry]
+    /// First sequence in the returned range, as reported by the API.
+    public let from: Int64?
+    /// Last sequence in the returned range, as reported by the API.
+    public let to: Int64?
+    /// Total entries in the range, as reported by the API (ranges are capped at 1000 entries).
+    public let total: Int64?
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         entries = try c.decodeOrDefault([ChainEntry].self, forKey: .entries, default: [])
+        self.from = try c.decodeIfPresent(Int64.self, forKey: .from)
+        self.to = try c.decodeIfPresent(Int64.self, forKey: .to)
+        total = try c.decodeIfPresent(Int64.self, forKey: .total)
     }
 
-    enum CodingKeys: String, CodingKey { case entries }
+    enum CodingKeys: String, CodingKey { case entries, from, to, total }
 }
 
 /// The latest entry of the registry hash chain, from `GET /v1/chain/latest`.

@@ -64,8 +64,8 @@ A fresh consumer then builds with exactly this snippet (Gradle, Kotlin DSL):
 
 ```kotlin
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {

@@ -8,8 +8,8 @@ group = "ai.basedagents"
 version = "1.0.0"
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -26,6 +26,15 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+    // Print one result line per test so a plain `gradle test` run shows the
+    // full test count in its output (used by the CI verbatim-output run).
+    testLogging {
+        events = setOf(
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+        )
+    }
 }
 
 publishing {

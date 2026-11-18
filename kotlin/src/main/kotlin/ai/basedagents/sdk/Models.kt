@@ -3,9 +3,9 @@ package ai.basedagents.sdk
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
@@ -314,8 +314,15 @@ private data class AgentSkillWire(
 
 /** Accepts a skill as either a JSON object or a bare string (legacy profiles). */
 object AgentSkillSerializer : KSerializer<AgentSkill> {
+    // The wire form this serializer encodes is the object shape of
+    // [AgentSkillWire], so the descriptor declares that object structure
+    // (decoding additionally accepts a bare string for legacy profiles).
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("ai.basedagents.sdk.AgentSkill", PrimitiveKind.STRING)
+        buildClassSerialDescriptor("ai.basedagents.sdk.AgentSkill") {
+            element<String>("name")
+            element<String?>("registry", isOptional = true)
+            element<Boolean>("private", isOptional = true)
+        }
 
     override fun deserialize(decoder: Decoder): AgentSkill {
         val jsonDecoder = decoder as? JsonDecoder
@@ -506,6 +513,12 @@ data class ChainEntry(
 @Serializable
 data class ChainRangeEnvelope(
     val entries: List<ChainEntry> = emptyList(),
+    /** First sequence in the returned range, as reported by the API. */
+    val from: Long? = null,
+    /** Last sequence in the returned range, as reported by the API. */
+    val to: Long? = null,
+    /** Total entries in the range, as reported by the API (ranges are capped at 1000 entries). */
+    val total: Long? = null,
 )
 
 // ---------------------------------------------------------------------------

@@ -1,130 +1,145 @@
-=== BasedAgents SDK — Swift test suite (Revision 1) ===
+=== BasedAgents SDK — Swift test suite (Revision 2) ===
 Command: swift test
 Swift 6.0.3 (~/tools/swift-6.0.3), Linux, offline against the shared fixture corpus
-Date: 2026-11-16T03:14:32Z
+Date: 2026-11-18T05:34:16Z
 
 [0/1] Planning build
 Building for debugging...
-[0/2] Write swift-version-3D01209E6C3C96C9.txt
-Build complete! (0.70s)
-Test Suite 'All tests' started at 2026-11-16 03:14:37.144
-Test Suite 'debug.xctest' started at 2026-11-16 03:14:37.238
-Test Suite 'ClientTests' started at 2026-11-16 03:14:37.238
-Test Case 'ClientTests.testAgentEndpointsBuildExpectedPaths' started at 2026-11-16 03:14:37.238
-Test Case 'ClientTests.testAgentEndpointsBuildExpectedPaths' passed (0.005 seconds)
-Test Case 'ClientTests.testAgentsStreamAggregatesEverySearchPage' started at 2026-11-16 03:14:37.243
-Test Case 'ClientTests.testAgentsStreamAggregatesEverySearchPage' passed (0.002 seconds)
-Test Case 'ClientTests.testCancelledCallAgainstStalledTransportEndsPromptly' started at 2026-11-16 03:14:37.245
+[0/3] Write sources
+[1/3] Write swift-version-3D01209E6C3C96C9.txt
+[3/5] Emitting module BasedAgentsSDK
+[4/5] Compiling BasedAgentsSDK AgentModels.swift
+[5/6] Compiling BasedAgentsSDK APIClient.swift
+[6/14] Wrapping AST for BasedAgentsSDK for debugging
+[8/17] Compiling BasedAgentsSDKTests FixtureDecodingTests.swift
+[9/17] Emitting module BasedAgentsSDKTests
+[10/17] Compiling BasedAgentsSDKTests ClientTests.swift
+[11/17] /home/hatch/workspace/basedagents/sdk/swift/.build/x86_64-unknown-linux-gnu/debug/BasedAgentsSDKPackageDiscoveredTests.derived/all-discovered-tests.swift
+[12/18] Write sources
+[14/21] Compiling BasedAgentsSDKPackageDiscoveredTests all-discovered-tests.swift
+[15/21] Compiling BasedAgentsSDKPackageDiscoveredTests BasedAgentsSDKTests.swift
+[16/21] Emitting module BasedAgentsSDKPackageDiscoveredTests
+[17/19] Write Objects.LinkFileList
+[18/19] Linking BasedAgentsSDKPackageTests.xctest
+Build complete! (14.68s)
+Test Suite 'All tests' started at 2026-11-18 05:34:15.346
+Test Suite 'debug.xctest' started at 2026-11-18 05:34:15.431
+Test Suite 'ClientTests' started at 2026-11-18 05:34:15.431
+Test Case 'ClientTests.testAgentEndpointsBuildExpectedPaths' started at 2026-11-18 05:34:15.431
+Test Case 'ClientTests.testAgentEndpointsBuildExpectedPaths' passed (0.016 seconds)
+Test Case 'ClientTests.testAgentsStreamAggregatesEverySearchPage' started at 2026-11-18 05:34:15.448
+Test Case 'ClientTests.testAgentsStreamAggregatesEverySearchPage' passed (0.009 seconds)
+Test Case 'ClientTests.testCancelledCallAgainstStalledTransportEndsPromptly' started at 2026-11-18 05:34:15.457
 Test Case 'ClientTests.testCancelledCallAgainstStalledTransportEndsPromptly' passed (0.101 seconds)
-Test Case 'ClientTests.testChainRangeAndEntryPaths' started at 2026-11-16 03:14:37.346
-Test Case 'ClientTests.testChainRangeAndEntryPaths' passed (0.001 seconds)
-Test Case 'ClientTests.testConsumerTaskCompilesAlongsideSDKImport' started at 2026-11-16 03:14:37.347
-Test Case 'ClientTests.testConsumerTaskCompilesAlongsideSDKImport' passed (0.0 seconds)
-Test Case 'ClientTests.testGetTaskHitsDetailPath' started at 2026-11-16 03:14:37.347
-Test Case 'ClientTests.testGetTaskHitsDetailPath' passed (0.004 seconds)
-Test Case 'ClientTests.testListTasksBuildsPathWithQueryParams' started at 2026-11-16 03:14:37.351
-Test Case 'ClientTests.testListTasksBuildsPathWithQueryParams' passed (0.004 seconds)
-Test Case 'ClientTests.testListTasksEncodesFiltersAndPaging' started at 2026-11-16 03:14:37.355
+Test Case 'ClientTests.testChainRangeAndEntryPaths' started at 2026-11-18 05:34:15.558
+Test Case 'ClientTests.testChainRangeAndEntryPaths' passed (0.002 seconds)
+Test Case 'ClientTests.testConsumerTaskCompilesAlongsideSDKImport' started at 2026-11-18 05:34:15.560
+Test Case 'ClientTests.testConsumerTaskCompilesAlongsideSDKImport' passed (0.003 seconds)
+Test Case 'ClientTests.testGetTaskHitsDetailPath' started at 2026-11-18 05:34:15.563
+Test Case 'ClientTests.testGetTaskHitsDetailPath' passed (0.005 seconds)
+Test Case 'ClientTests.testListTasksBuildsPathWithQueryParams' started at 2026-11-18 05:34:15.569
+Test Case 'ClientTests.testListTasksBuildsPathWithQueryParams' passed (0.005 seconds)
+Test Case 'ClientTests.testListTasksEncodesFiltersAndPaging' started at 2026-11-18 05:34:15.574
 Test Case 'ClientTests.testListTasksEncodesFiltersAndPaging' passed (0.004 seconds)
-Test Case 'ClientTests.testMalformedSuccessBodyMapsToDecodingError' started at 2026-11-16 03:14:37.358
+Test Case 'ClientTests.testMalformedSuccessBodyMapsToDecodingError' started at 2026-11-18 05:34:15.577
 Test Case 'ClientTests.testMalformedSuccessBodyMapsToDecodingError' passed (0.0 seconds)
-Test Case 'ClientTests.testNonJSONErrorBodyStillMapsByStatus' started at 2026-11-16 03:14:37.359
+Test Case 'ClientTests.testNonJSONErrorBodyStillMapsByStatus' started at 2026-11-18 05:34:15.578
 Test Case 'ClientTests.testNonJSONErrorBodyStillMapsByStatus' passed (0.0 seconds)
-Test Case 'ClientTests.testNotFoundMapsWithAPIError' started at 2026-11-16 03:14:37.359
-Test Case 'ClientTests.testNotFoundMapsWithAPIError' passed (0.0 seconds)
-Test Case 'ClientTests.testRateLimitedMapsWithRetryAfter' started at 2026-11-16 03:14:37.359
+Test Case 'ClientTests.testNotFoundMapsWithAPIError' started at 2026-11-18 05:34:15.578
+Test Case 'ClientTests.testNotFoundMapsWithAPIError' passed (0.001 seconds)
+Test Case 'ClientTests.testRateLimitedMapsWithRetryAfter' started at 2026-11-18 05:34:15.579
 Test Case 'ClientTests.testRateLimitedMapsWithRetryAfter' passed (0.0 seconds)
-Test Case 'ClientTests.testReceiptsAndPaymentPaths' started at 2026-11-16 03:14:37.360
-Test Case 'ClientTests.testReceiptsAndPaymentPaths' passed (0.001 seconds)
-Test Case 'ClientTests.testSearchAgentsSendsPageParameter' started at 2026-11-16 03:14:37.361
+Test Case 'ClientTests.testReceiptsAndPaymentPaths' started at 2026-11-18 05:34:15.579
+Test Case 'ClientTests.testReceiptsAndPaymentPaths' passed (0.003 seconds)
+Test Case 'ClientTests.testSearchAgentsSendsPageParameter' started at 2026-11-18 05:34:15.583
 Test Case 'ClientTests.testSearchAgentsSendsPageParameter' passed (0.001 seconds)
-Test Case 'ClientTests.testServerErrorMaps' started at 2026-11-16 03:14:37.362
+Test Case 'ClientTests.testServerErrorMaps' started at 2026-11-18 05:34:15.583
 Test Case 'ClientTests.testServerErrorMaps' passed (0.0 seconds)
-Test Case 'ClientTests.testServiceEndpointsBuildExpectedPaths' started at 2026-11-16 03:14:37.362
-Test Case 'ClientTests.testServiceEndpointsBuildExpectedPaths' passed (0.003 seconds)
-Test Case 'ClientTests.testSettledListCarriesLimitAndWindow' started at 2026-11-16 03:14:37.366
-Test Case 'ClientTests.testSettledListCarriesLimitAndWindow' passed (0.002 seconds)
-Test Case 'ClientTests.testSettledStreamFollowsCursorToTheEnd' started at 2026-11-16 03:14:37.368
-Test Case 'ClientTests.testSettledStreamFollowsCursorToTheEnd' passed (0.001 seconds)
-Test Case 'ClientTests.testTasksStreamAggregatesPagesUntilShortPage' started at 2026-11-16 03:14:37.369
-Test Case 'ClientTests.testTasksStreamAggregatesPagesUntilShortPage' passed (0.004 seconds)
-Test Case 'ClientTests.testTasksStreamClampsOversizedPageSizeToAPIMaximum' started at 2026-11-16 03:14:37.373
-Test Case 'ClientTests.testTasksStreamClampsOversizedPageSizeToAPIMaximum' passed (0.0 seconds)
-Test Case 'ClientTests.testTasksStreamStopsAfterPartialPage' started at 2026-11-16 03:14:37.373
-Test Case 'ClientTests.testTasksStreamStopsAfterPartialPage' passed (0.002 seconds)
-Test Case 'ClientTests.testTransportFailureMapsToNetworkError' started at 2026-11-16 03:14:37.375
+Test Case 'ClientTests.testServiceEndpointsBuildExpectedPaths' started at 2026-11-18 05:34:15.584
+Test Case 'ClientTests.testServiceEndpointsBuildExpectedPaths' passed (0.106 seconds)
+Test Case 'ClientTests.testSettledListCarriesLimitAndWindow' started at 2026-11-18 05:34:15.690
+Test Case 'ClientTests.testSettledListCarriesLimitAndWindow' passed (0.025 seconds)
+Test Case 'ClientTests.testSettledStreamFollowsCursorToTheEnd' started at 2026-11-18 05:34:15.715
+Test Case 'ClientTests.testSettledStreamFollowsCursorToTheEnd' passed (0.002 seconds)
+Test Case 'ClientTests.testTasksStreamAggregatesPagesUntilShortPage' started at 2026-11-18 05:34:15.717
+Test Case 'ClientTests.testTasksStreamAggregatesPagesUntilShortPage' passed (0.007 seconds)
+Test Case 'ClientTests.testTasksStreamClampsOversizedPageSizeToAPIMaximum' started at 2026-11-18 05:34:15.724
+Test Case 'ClientTests.testTasksStreamClampsOversizedPageSizeToAPIMaximum' passed (0.001 seconds)
+Test Case 'ClientTests.testTasksStreamStopsAfterPartialPage' started at 2026-11-18 05:34:15.724
+Test Case 'ClientTests.testTasksStreamStopsAfterPartialPage' passed (0.004 seconds)
+Test Case 'ClientTests.testTransportFailureMapsToNetworkError' started at 2026-11-18 05:34:15.729
 Test Case 'ClientTests.testTransportFailureMapsToNetworkError' passed (0.0 seconds)
-Test Case 'ClientTests.testTruncatedSuccessBodyMapsToDecodingError' started at 2026-11-16 03:14:37.375
-Test Case 'ClientTests.testTruncatedSuccessBodyMapsToDecodingError' passed (0.0 seconds)
-Test Case 'ClientTests.testURLSessionTransportCancellationAgainstStalledServer' started at 2026-11-16 03:14:37.376
-Test Case 'ClientTests.testURLSessionTransportCancellationAgainstStalledServer' passed (0.205 seconds)
-Test Case 'ClientTests.testUnauthorizedMapsFrom401' started at 2026-11-16 03:14:37.581
+Test Case 'ClientTests.testTruncatedSuccessBodyMapsToDecodingError' started at 2026-11-18 05:34:15.729
+Test Case 'ClientTests.testTruncatedSuccessBodyMapsToDecodingError' passed (0.001 seconds)
+Test Case 'ClientTests.testURLSessionTransportCancellationAgainstStalledServer' started at 2026-11-18 05:34:15.730
+Test Case 'ClientTests.testURLSessionTransportCancellationAgainstStalledServer' passed (0.224 seconds)
+Test Case 'ClientTests.testUnauthorizedMapsFrom401' started at 2026-11-18 05:34:15.953
 Test Case 'ClientTests.testUnauthorizedMapsFrom401' passed (0.001 seconds)
-Test Case 'ClientTests.testUnauthorizedMapsFrom403' started at 2026-11-16 03:14:37.582
+Test Case 'ClientTests.testUnauthorizedMapsFrom403' started at 2026-11-18 05:34:15.954
 Test Case 'ClientTests.testUnauthorizedMapsFrom403' passed (0.0 seconds)
-Test Case 'ClientTests.testUnexpectedStatusMaps' started at 2026-11-16 03:14:37.582
+Test Case 'ClientTests.testUnexpectedStatusMaps' started at 2026-11-18 05:34:15.954
 Test Case 'ClientTests.testUnexpectedStatusMaps' passed (0.0 seconds)
-Test Suite 'ClientTests' passed at 2026-11-16 03:14:37.582
-	 Executed 27 tests, with 0 failures (0 unexpected) in 0.344 (0.344) seconds
-Test Suite 'FixtureDecodingTests' started at 2026-11-16 03:14:37.582
-Test Case 'FixtureDecodingTests.testAgentProfileDecodes' started at 2026-11-16 03:14:37.582
-Test Case 'FixtureDecodingTests.testAgentProfileDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testAgentProfileWithNullWalletDecodes' started at 2026-11-16 03:14:37.582
+Test Suite 'ClientTests' passed at 2026-11-18 05:34:15.955
+	 Executed 27 tests, with 0 failures (0 unexpected) in 0.523 (0.523) seconds
+Test Suite 'FixtureDecodingTests' started at 2026-11-18 05:34:15.955
+Test Case 'FixtureDecodingTests.testAgentProfileDecodes' started at 2026-11-18 05:34:15.955
+Test Case 'FixtureDecodingTests.testAgentProfileDecodes' passed (0.001 seconds)
+Test Case 'FixtureDecodingTests.testAgentProfileWithNullWalletDecodes' started at 2026-11-18 05:34:15.956
 Test Case 'FixtureDecodingTests.testAgentProfileWithNullWalletDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testAgentSearchDecodes' started at 2026-11-16 03:14:37.583
-Test Case 'FixtureDecodingTests.testAgentSearchDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testAgentSkillsDecodeAsObjects' started at 2026-11-16 03:14:37.583
+Test Case 'FixtureDecodingTests.testAgentSearchDecodes' started at 2026-11-18 05:34:15.956
+Test Case 'FixtureDecodingTests.testAgentSearchDecodes' passed (0.001 seconds)
+Test Case 'FixtureDecodingTests.testAgentSkillsDecodeAsObjects' started at 2026-11-18 05:34:15.957
 Test Case 'FixtureDecodingTests.testAgentSkillsDecodeAsObjects' passed (0.001 seconds)
-Test Case 'FixtureDecodingTests.testCategoryPageContainsOnlyThatCategory' started at 2026-11-16 03:14:37.584
-Test Case 'FixtureDecodingTests.testCategoryPageContainsOnlyThatCategory' passed (0.001 seconds)
-Test Case 'FixtureDecodingTests.testChainLatestDecodes' started at 2026-11-16 03:14:37.585
+Test Case 'FixtureDecodingTests.testCategoryPageContainsOnlyThatCategory' started at 2026-11-18 05:34:15.958
+Test Case 'FixtureDecodingTests.testCategoryPageContainsOnlyThatCategory' passed (0.002 seconds)
+Test Case 'FixtureDecodingTests.testChainLatestDecodes' started at 2026-11-18 05:34:15.960
 Test Case 'FixtureDecodingTests.testChainLatestDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testChainRangeDecodesEveryEntryInSequence' started at 2026-11-16 03:14:37.585
+Test Case 'FixtureDecodingTests.testChainRangeDecodesEveryEntryInSequence' started at 2026-11-18 05:34:15.960
 Test Case 'FixtureDecodingTests.testChainRangeDecodesEveryEntryInSequence' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testErrorBodiesDecode' started at 2026-11-16 03:14:37.585
-Test Case 'FixtureDecodingTests.testErrorBodiesDecode' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testFractionalReputationTasksAcceptedDecodes' started at 2026-11-16 03:14:37.586
-Test Case 'FixtureDecodingTests.testFractionalReputationTasksAcceptedDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testHealthDecodes' started at 2026-11-16 03:14:37.586
+Test Case 'FixtureDecodingTests.testErrorBodiesDecode' started at 2026-11-18 05:34:15.960
+Test Case 'FixtureDecodingTests.testErrorBodiesDecode' passed (0.101 seconds)
+Test Case 'FixtureDecodingTests.testFractionalReputationTasksAcceptedDecodes' started at 2026-11-18 05:34:16.061
+Test Case 'FixtureDecodingTests.testFractionalReputationTasksAcceptedDecodes' passed (0.009 seconds)
+Test Case 'FixtureDecodingTests.testHealthDecodes' started at 2026-11-18 05:34:16.070
 Test Case 'FixtureDecodingTests.testHealthDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testOpenTasksEnvelopeDecodesAllTasks' started at 2026-11-16 03:14:37.586
-Test Case 'FixtureDecodingTests.testOpenTasksEnvelopeDecodesAllTasks' passed (0.001 seconds)
-Test Case 'FixtureDecodingTests.testReceiptsListDecodes' started at 2026-11-16 03:14:37.587
+Test Case 'FixtureDecodingTests.testOpenTasksEnvelopeDecodesAllTasks' started at 2026-11-18 05:34:16.071
+Test Case 'FixtureDecodingTests.testOpenTasksEnvelopeDecodesAllTasks' passed (0.002 seconds)
+Test Case 'FixtureDecodingTests.testReceiptsListDecodes' started at 2026-11-18 05:34:16.072
 Test Case 'FixtureDecodingTests.testReceiptsListDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testReputationDecodes' started at 2026-11-16 03:14:37.588
-Test Case 'FixtureDecodingTests.testReputationDecodes' passed (0.101 seconds)
-Test Case 'FixtureDecodingTests.testSecondPageIsTheOffsetSliceOfTheFirst' started at 2026-11-16 03:14:37.688
-Test Case 'FixtureDecodingTests.testSecondPageIsTheOffsetSliceOfTheFirst' passed (0.003 seconds)
-Test Case 'FixtureDecodingTests.testSecondTaskDetailDecodes' started at 2026-11-16 03:14:37.692
+Test Case 'FixtureDecodingTests.testReputationDecodes' started at 2026-11-18 05:34:16.073
+Test Case 'FixtureDecodingTests.testReputationDecodes' passed (0.0 seconds)
+Test Case 'FixtureDecodingTests.testSecondPageIsTheOffsetSliceOfTheFirst' started at 2026-11-18 05:34:16.073
+Test Case 'FixtureDecodingTests.testSecondPageIsTheOffsetSliceOfTheFirst' passed (0.002 seconds)
+Test Case 'FixtureDecodingTests.testSecondTaskDetailDecodes' started at 2026-11-18 05:34:16.075
 Test Case 'FixtureDecodingTests.testSecondTaskDetailDecodes' passed (0.003 seconds)
-Test Case 'FixtureDecodingTests.testServiceDescriptorDecodes' started at 2026-11-16 03:14:37.695
+Test Case 'FixtureDecodingTests.testServiceDescriptorDecodes' started at 2026-11-18 05:34:16.078
 Test Case 'FixtureDecodingTests.testServiceDescriptorDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testSettledEnvelopeDecodesStatsCursorAndSummaries' started at 2026-11-16 03:14:37.695
+Test Case 'FixtureDecodingTests.testSettledEnvelopeDecodesStatsCursorAndSummaries' started at 2026-11-18 05:34:16.079
 Test Case 'FixtureDecodingTests.testSettledEnvelopeDecodesStatsCursorAndSummaries' passed (0.001 seconds)
-Test Case 'FixtureDecodingTests.testSettledPaymentDetailsDecodeEscrowAndEvents' started at 2026-11-16 03:14:37.696
-Test Case 'FixtureDecodingTests.testSettledPaymentDetailsDecodeEscrowAndEvents' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testSettledTaskDetailHasBountyAndReleasedEscrow' started at 2026-11-16 03:14:37.696
+Test Case 'FixtureDecodingTests.testSettledPaymentDetailsDecodeEscrowAndEvents' started at 2026-11-18 05:34:16.080
+Test Case 'FixtureDecodingTests.testSettledPaymentDetailsDecodeEscrowAndEvents' passed (0.001 seconds)
+Test Case 'FixtureDecodingTests.testSettledTaskDetailHasBountyAndReleasedEscrow' started at 2026-11-18 05:34:16.081
 Test Case 'FixtureDecodingTests.testSettledTaskDetailHasBountyAndReleasedEscrow' passed (0.003 seconds)
-Test Case 'FixtureDecodingTests.testSingleChainEntryDecodes' started at 2026-11-16 03:14:37.699
+Test Case 'FixtureDecodingTests.testSingleChainEntryDecodes' started at 2026-11-18 05:34:16.084
 Test Case 'FixtureDecodingTests.testSingleChainEntryDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testSingleReceiptEnvelopeDecodes' started at 2026-11-16 03:14:37.699
+Test Case 'FixtureDecodingTests.testSingleReceiptEnvelopeDecodes' started at 2026-11-18 05:34:16.084
 Test Case 'FixtureDecodingTests.testSingleReceiptEnvelopeDecodes' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testStatusDecodesWithRegistryCounters' started at 2026-11-16 03:14:37.700
+Test Case 'FixtureDecodingTests.testStatusDecodesWithRegistryCounters' started at 2026-11-18 05:34:16.085
 Test Case 'FixtureDecodingTests.testStatusDecodesWithRegistryCounters' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testTaskDetailDecodesNestedPaymentAndReceipt' started at 2026-11-16 03:14:37.700
+Test Case 'FixtureDecodingTests.testTaskDetailDecodesNestedPaymentAndReceipt' started at 2026-11-18 05:34:16.085
 Test Case 'FixtureDecodingTests.testTaskDetailDecodesNestedPaymentAndReceipt' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testTaskWithWalletCreatorAndNullCreatorIdDecodes' started at 2026-11-16 03:14:37.700
-Test Case 'FixtureDecodingTests.testTaskWithWalletCreatorAndNullCreatorIdDecodes' passed (0.001 seconds)
-Test Case 'FixtureDecodingTests.testUnpaidPaymentDetailsDecode' started at 2026-11-16 03:14:37.701
-Test Case 'FixtureDecodingTests.testUnpaidPaymentDetailsDecode' passed (0.0 seconds)
-Test Case 'FixtureDecodingTests.testWalletDecodesWithProof' started at 2026-11-16 03:14:37.701
-Test Case 'FixtureDecodingTests.testWalletDecodesWithProof' passed (0.1 seconds)
-Test Suite 'FixtureDecodingTests' passed at 2026-11-16 03:14:37.802
-	 Executed 26 tests, with 0 failures (0 unexpected) in 0.22 (0.22) seconds
-Test Suite 'debug.xctest' passed at 2026-11-16 03:14:37.802
-	 Executed 53 tests, with 0 failures (0 unexpected) in 0.563 (0.563) seconds
-Test Suite 'All tests' passed at 2026-11-16 03:14:37.802
-	 Executed 53 tests, with 0 failures (0 unexpected) in 0.563 (0.563) seconds
+Test Case 'FixtureDecodingTests.testTaskWithWalletCreatorAndNullCreatorIdDecodes' started at 2026-11-18 05:34:16.085
+Test Case 'FixtureDecodingTests.testTaskWithWalletCreatorAndNullCreatorIdDecodes' passed (0.0 seconds)
+Test Case 'FixtureDecodingTests.testUnpaidPaymentDetailsDecode' started at 2026-11-18 05:34:16.086
+Test Case 'FixtureDecodingTests.testUnpaidPaymentDetailsDecode' passed (0.001 seconds)
+Test Case 'FixtureDecodingTests.testWalletDecodesWithProof' started at 2026-11-18 05:34:16.087
+Test Case 'FixtureDecodingTests.testWalletDecodesWithProof' passed (0.0 seconds)
+Test Suite 'FixtureDecodingTests' passed at 2026-11-18 05:34:16.087
+	 Executed 26 tests, with 0 failures (0 unexpected) in 0.131 (0.131) seconds
+Test Suite 'debug.xctest' passed at 2026-11-18 05:34:16.087
+	 Executed 53 tests, with 0 failures (0 unexpected) in 0.654 (0.654) seconds
+Test Suite 'All tests' passed at 2026-11-18 05:34:16.087
+	 Executed 53 tests, with 0 failures (0 unexpected) in 0.654 (0.654) seconds
 ◇ Test run started.
 ↳ Testing Library Version: 6.0.3 (18c42c19cac3faf)
 ✔ Test run with 0 tests passed after 0.001 seconds.

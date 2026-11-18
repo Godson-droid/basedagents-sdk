@@ -280,9 +280,16 @@ class ClientTest {
     @Test
     fun `default transport cancellation abandons a stalled server within a second`() {
         runBlocking {
-            // A server socket on IPv6 loopback that accepts and never answers.
-            val server = ServerSocket()
-            server.bind(InetSocketAddress("::1", 0))
+            // A server socket on a loopback address that accepts and never
+            // answers. Bind IPv4 loopback first so the test also passes on
+            // IPv4-only hosts; fall back to IPv6 loopback if 127.0.0.1
+            // cannot be bound. The client URLs use whichever address was
+            // actually bound (bracketed form for IPv6).
+            val (server, host) = try {
+                ServerSocket().apply { bind(InetSocketAddress("127.0.0.1", 0)) } to "127.0.0.1"
+            } catch (e: IOException) {
+                ServerSocket().apply { bind(InetSocketAddress("::1", 0)) } to "[::1]"
+            }
             val port = server.localPort
             val accepter = thread(isDaemon = true) {
                 try {
@@ -297,8 +304,8 @@ class ClientTest {
                 val transport = UrlConnectionTransport()
                 val stalledClient = BasedAgentsClient(
                     transport = transport,
-                    baseUrl = "http://[::1]:$port/v1",
-                    descriptorUrl = "http://[::1]:$port/descriptor",
+                    baseUrl = "http://$host:$port/v1",
+                    descriptorUrl = "http://$host:$port/descriptor",
                     minRequestIntervalMillis = 0,
                 )
                 val deferred = async { stalledClient.status() }

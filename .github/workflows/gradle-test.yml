@@ -1,0 +1,43 @@
+name: gradle-test
+
+# Runs the canonical Kotlin build exactly as a consumer would:
+# plain `gradle test` in kotlin/. The step's stdout is tee'd to a file
+# and uploaded as the `gradle-test-output` artifact, so the verbatim
+# gradle output can be quoted in the SDK delivery
+# (kotlin/gradle-test-output.txt) without runner log decoration.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  gradle-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Run gradle test
+        working-directory: kotlin
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle test 2>&1 | tee gradle-test-output.txt
+
+      - name: Upload the verbatim gradle test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-test-output
+          path: kotlin/gradle-test-output.txt

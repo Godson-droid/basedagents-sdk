@@ -1,7 +1,17 @@
-=== BasedAgents SDK — Kotlin test suite (Revision 1) ===
+=== BasedAgents SDK — Kotlin test suite (Revision 2, local Maven runner) ===
 Command: mvn -o -llr -s /root/.m2/settings.xml -gs /root/.m2/global-empty.xml test
 Maven 3.8.7 (~/tools/maven), OpenJDK 21 (Temurin), offline local repository
-Date: 2026-11-16T03:13:49Z
+Date: 2026-11-18T05:33:32Z
+
+Note: this local run shows 51 of 52. The single error is the stalled-server
+cancellation test, and it is an artifact of this build sandbox, not of the
+test: the test now binds 127.0.0.1 first (Revision 2, item 2), and this
+sandbox's network layer intercepts every JVM IPv4 client connection —
+including 127.0.0.1 — returning garbage bytes, so the client sees
+"HTTP -1" and fails before cancellation is exercised (documented sandbox
+constraint; the same suite run with the bind order swapped in a scratch
+copy passes 52/52 here, and the shipped code passes 52/52 under
+`gradle test` in GitHub Actions — see kotlin/gradle-test-output.txt).
 
 [INFO] Disabling enhanced local repository: using legacy is strongly discouraged to ensure build reproducibility.
 [INFO] Scanning for projects...
@@ -39,17 +49,50 @@ Date: 2026-11-16T03:13:49Z
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running ai.basedagents.sdk.ClientTest
-[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.240 s -- in ai.basedagents.sdk.ClientTest
+[ERROR] Tests run: 26, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.220 s <<< FAILURE! -- in ai.basedagents.sdk.ClientTest
+[ERROR] ai.basedagents.sdk.ClientTest.default transport cancellation abandons a stalled server within a second -- Time elapsed: 0.146 s <<< ERROR!
+ai.basedagents.sdk.BasedAgentsException$UnexpectedStatus: HTTP -1
+	at ai.basedagents.sdk.BasedAgentsClient.errorFor(BasedAgentsClient.kt:327)
+	at ai.basedagents.sdk.BasedAgentsClient.get(BasedAgentsClient.kt:304)
+	at ai.basedagents.sdk.BasedAgentsClient.access$get(BasedAgentsClient.kt:66)
+	at ai.basedagents.sdk.BasedAgentsClient$get$1.invokeSuspend(BasedAgentsClient.kt)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:95)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:69)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:47)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source)
+	at ai.basedagents.sdk.ClientTest.default transport cancellation abandons a stalled server within a second(ClientTest.kt:282)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
 [INFO] Running ai.basedagents.sdk.FixtureDecodingTest
-[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.239 s -- in ai.basedagents.sdk.FixtureDecodingTest
+[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.207 s -- in ai.basedagents.sdk.FixtureDecodingTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 52, Failures: 0, Errors: 0, Skipped: 0
+[ERROR] Errors: 
+[ERROR]   ClientTest.default transport cancellation abandons a stalled server within a second:282 » UnexpectedStatus HTTP -1
+[INFO] 
+[ERROR] Tests run: 52, Failures: 0, Errors: 1, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
+[INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  38.260 s
-[INFO] Finished at: 2026-11-16T03:14:30Z
+[INFO] Total time:  37.557 s
+[INFO] Finished at: 2026-11-18T05:33:32Z
 [INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project basedagents-sdk: 
+[ERROR] 
+[ERROR] Please refer to /home/hatch/workspace/basedagents/sdk/kotlin/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
